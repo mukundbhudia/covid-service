@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 
-// const logger = require('../logger').initLogger()
+const logger = require('../logger').initLogger()
 
 const { connectDB, getDBClient, getClient, disconnectDB } = require('../src/dbClient')
 const processing = require('../src/services/csvProcessing')
@@ -66,6 +66,7 @@ const totalDeaths = async () => {
 }
 
 const replaceGis = async () => {
+  logger.info("Fetching data...")
   await connectDB()
   const dbClient = getDBClient()
   const session = getClient().startSession()
@@ -134,7 +135,7 @@ const replaceGis = async () => {
       }
     })
 
-    console.log(`Countries/Regions total: ${combinedCountryCasesWithTimeSeries.length}. (From ${cases.length} GIS cases and ${timeSeriesCases.collection.length} GH cases) at ${(new Date()).toLocaleString()}`)
+    logger.info(`Countries/Regions total: ${combinedCountryCasesWithTimeSeries.length}. (From ${cases.length} GIS cases and ${timeSeriesCases.collection.length} GH cases)`)
 
     await session.withTransaction(async () => {
       await dbClient.collection('totals').deleteMany({})
@@ -142,7 +143,7 @@ const replaceGis = async () => {
 
       await dbClient.collection('casesByLocation').deleteMany({})
       await dbClient.collection('casesByLocation').insertMany(combinedCountryCasesWithTimeSeries)
-      console.log("Saved to database...")
+      logger.info("Saved to database.")
     })
   }
 
@@ -152,23 +153,23 @@ const replaceGis = async () => {
 
 const fetchAndReplace = () => {
   try {
-    console.log("Fetching services...")
     replaceGis()
   } catch (err) {
-    console.error(err)
+    logger.error(err)
   } 
 }
 
 const SERVICE_FETCH_INTERVAL_IN_MINS = 30
 
 // Initial load
+logger.info("Service loader started...")
 fetchAndReplace()
 
 setInterval(() => {
   try {
     fetchAndReplace()
   } catch (err) {
-    console.error(err)
+    logger.error(err)
   }
 }, 1000 * 60 * SERVICE_FETCH_INTERVAL_IN_MINS)
 

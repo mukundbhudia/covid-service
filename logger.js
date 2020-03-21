@@ -12,7 +12,7 @@ module.exports = {
         // winston.format.splat(),
         winston.format.json()
       ),
-      defaultMeta: { service: 'user-service' },
+      defaultMeta: { service: 'covid-data-loader' },
       transports: [
         //
         // - Write all logs with level `error` and below to `error.log`
