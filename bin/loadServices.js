@@ -1,5 +1,7 @@
 #!/usr/bin/env node
 
+const logger = require('../logger').initLogger()
+
 const { connectDB, getDBClient, getClient, disconnectDB } = require('../src/dbClient')
 const processing = require('../src/services/csvProcessing')
 const {
