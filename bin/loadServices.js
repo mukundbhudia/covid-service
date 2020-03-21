@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 
-const logger = require('../logger').initLogger()
+// const logger = require('../logger').initLogger()
 
 const { connectDB, getDBClient, getClient, disconnectDB } = require('../src/dbClient')
 const processing = require('../src/services/csvProcessing')
@@ -159,7 +159,7 @@ const fetchAndReplace = () => {
   } 
 }
 
-const SERVICE_FETCH_INTERVAL_IN_MINS = 15
+const SERVICE_FETCH_INTERVAL_IN_MINS = 30
 
 // Initial load
 fetchAndReplace()
