@@ -36,49 +36,50 @@ const processCsvFromSources = (csv_confirmedCases, csv_recoveredCases, csv_death
     rowKeys.forEach((key) => {
       if (key.match(/^\d{1,2}\/\d{1,2}\/\d{1,2}$/g)) {
         daysCounter ++
-        // const keyDate = new Date(key)
         const parsedConfirmed = parseInt(confirmedCase[key], 10)
         const parsedRecovered = parseInt(recoveredCases[key], 10)
         const parsedDeaths = parseInt(deathCases[key], 10)
         const parsedActive = parsedConfirmed - parsedRecovered - parsedDeaths
 
-        if (Math.sign(parsedConfirmed) === -1 || Math.sign(parsedRecovered) === -1 || Math.sign(parsedDeaths) === -1) {
-          badRows++
-          console.error(`${countryRegion} in ${provinceState} is bad`)
-        }
-        
-        const casesTotalPerDay  = { 
-          confirmed: parsedConfirmed,
-          recovered: parsedRecovered,
-          deaths: parsedDeaths,
-          active: parsedActive,
-          day: key
-        }
-
-        processedData.casesByDate.push(casesTotalPerDay)
-
-        if (
-          stats.globalCasesByDate[key]
-        ) {
-          stats.globalCasesByDate[key].confirmed += parsedConfirmed
-          stats.globalCasesByDate[key].recovered += parsedRecovered
-          stats.globalCasesByDate[key].deaths += parsedDeaths
-          stats.globalCasesByDate[key].active += parsedActive
-        } else {
-          stats.globalCasesByDate[key] = { 
-            confirmed: 0,
-            recovered: 0,
-            deaths: 0,
-            active: 0,
-          }        
-        }
-
-        if (j + 1 === rowKeys.length) {
-          stats.confirmed += parsedConfirmed
-          stats.recovered += parsedRecovered
-          stats.deaths += parsedDeaths
-          stats.active += parsedActive
-          stats.daysSinceFirstCase = daysCounter
+        if (Number.isInteger(parsedConfirmed) && Number.isInteger(parsedRecovered) && Number.isInteger(parsedDeaths) && Number.isInteger(parsedActive)) {
+          if (Math.sign(parsedConfirmed) === -1 || Math.sign(parsedRecovered) === -1 || Math.sign(parsedDeaths) === -1) {
+            badRows++
+            console.error(`${countryRegion} in ${provinceState} is bad`)
+          }
+          
+          const casesTotalPerDay  = { 
+            confirmed: parsedConfirmed,
+            recovered: parsedRecovered,
+            deaths: parsedDeaths,
+            active: parsedActive,
+            day: key
+          }
+  
+          processedData.casesByDate.push(casesTotalPerDay)
+  
+          if (
+            stats.globalCasesByDate[key]
+          ) {
+            stats.globalCasesByDate[key].confirmed += parsedConfirmed
+            stats.globalCasesByDate[key].recovered += parsedRecovered
+            stats.globalCasesByDate[key].deaths += parsedDeaths
+            stats.globalCasesByDate[key].active += parsedActive
+          } else {
+            stats.globalCasesByDate[key] = { 
+              confirmed: 0,
+              recovered: 0,
+              deaths: 0,
+              active: 0,
+            }        
+          }
+  
+          if (j + 1 === rowKeys.length) {
+            stats.confirmed += parsedConfirmed
+            stats.recovered += parsedRecovered
+            stats.deaths += parsedDeaths
+            stats.active += parsedActive
+            stats.daysSinceFirstCase = daysCounter
+          }
         }
       }
       j ++
