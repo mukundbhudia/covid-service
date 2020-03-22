@@ -1,4 +1,5 @@
 const { MongoClient } = require('mongodb')
+const logger = require('../logger').initLogger()
 
 let client
 
@@ -6,7 +7,7 @@ const connectDB = async () => {
   try {
     client = await MongoClient.connect(process.env.MONGO_URI, { useUnifiedTopology: true })
   } catch (error) {
-    console.error(error)
+    logger.error(error)
   }
 }
 

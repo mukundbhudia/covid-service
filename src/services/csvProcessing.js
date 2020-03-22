@@ -1,4 +1,5 @@
 const csv2json = require('csvjson-csv2json')
+const logger = require('../../logger').initLogger()
 
 const processCsvFromSources = (csv_confirmedCases, csv_recoveredCases, csv_deathCases) => {
   let collection = []
@@ -44,7 +45,7 @@ const processCsvFromSources = (csv_confirmedCases, csv_recoveredCases, csv_death
         if (Number.isInteger(parsedConfirmed) && Number.isInteger(parsedRecovered) && Number.isInteger(parsedDeaths) && Number.isInteger(parsedActive)) {
           if (Math.sign(parsedConfirmed) === -1 || Math.sign(parsedRecovered) === -1 || Math.sign(parsedDeaths) === -1) {
             badRows++
-            console.error(`${countryRegion} in ${provinceState} is bad`)
+            logger.error(`${countryRegion} in ${provinceState} is bad`)
           }
           
           const casesTotalPerDay  = { 
@@ -86,7 +87,7 @@ const processCsvFromSources = (csv_confirmedCases, csv_recoveredCases, csv_death
     });
     collection.push(processedData)
   }
-  if (badRows > 0) { console.error(`Found ${badRows} badRows`) }
+  if (badRows > 0) { logger.error(`Found ${badRows} badRows`) }
   return { stats: stats, collection: collection }
 }
 
@@ -102,6 +103,7 @@ const combineDataFromSources = (confirmedCasesSource, recoveredCasesSource, deat
     return processCsvFromSources(jsonCsv_confirmedCases, jsonCsv_recoveredCases, jsonCsv_deathCases)
   } else {
     console.error("CSV data from multiple sources differs in length")
+    return null
   }
 }
 

@@ -24,14 +24,18 @@ const timeSeriesData = async () => {
   const recoveredCases = await getGhTimeSeriesRecovered()
   const deathCases = await getGhTimeSeriesDeaths()
   const result = processing.combineDataFromSources(confirmedCases.data, recoveredCases.data, deathCases.data)
-  const keys = Object.keys(result.stats.globalCasesByDate)
-  const timeSeries = []
-  keys.forEach(day => {
-    result.stats.globalCasesByDate[day].day = day
-    timeSeries.push(result.stats.globalCasesByDate[day])
-  })
-  result.stats.globalCasesByDate = timeSeries
-  return result
+  if (result) {
+    const keys = Object.keys(result.stats.globalCasesByDate)
+    const timeSeries = []
+    keys.forEach(day => {
+      result.stats.globalCasesByDate[day].day = day
+      timeSeries.push(result.stats.globalCasesByDate[day])
+    })
+    result.stats.globalCasesByDate = timeSeries
+    return result
+  } else {
+    return null
+  }
 }
 
 const casesByLocation = async () => {
@@ -88,7 +92,8 @@ const replaceGis = async () => {
     timeStamp: new Date(),
   }
 
-  if (cases.length > 0 &&
+  if (timeSeriesCases && cases &&
+    cases.length > 0 &&
     allTotals.confirmed > 0 &&
     allTotals.recovered > 0 &&
     allTotals.deaths > 0
