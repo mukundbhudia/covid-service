@@ -1,4 +1,4 @@
-import axios from 'axios'
+const axios = require('axios')
 
 const sourceURLs = {
   urlConfirmed: 'https://raw.githubusercontent.com/CSSEGISandData/COVID-19/master/csse_covid_19_data/csse_covid_19_time_series/time_series_19-covid-Confirmed.csv',
@@ -6,14 +6,20 @@ const sourceURLs = {
   urlDeaths: 'https://raw.githubusercontent.com/CSSEGISandData/COVID-19/master/csse_covid_19_data/csse_covid_19_time_series/time_series_19-covid-Deaths.csv',
 }
 
-export const getGhTimeSeriesConfirmed = () => {
+const getGhTimeSeriesConfirmed = () => {
   return axios.get(sourceURLs.urlConfirmed)
 }
 
-export const getGhTimeSeriesRecovered = () => {
+const getGhTimeSeriesRecovered = () => {
   return axios.get(sourceURLs.urlRecovered)
 }
 
-export const getGhTimeSeriesDeaths = () => {
+const getGhTimeSeriesDeaths = () => {
   return axios.get(sourceURLs.urlDeaths)
+}
+
+module.exports = {
+  getGhTimeSeriesConfirmed,
+  getGhTimeSeriesRecovered,
+  getGhTimeSeriesDeaths,
 }

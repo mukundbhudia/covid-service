@@ -1,8 +1,8 @@
-import { MongoClient } from "mongodb"
+const { MongoClient } = require('mongodb')
 
 let client
 
-export const connectDB = async () => {
+const connectDB = async () => {
   try {
     client = await MongoClient.connect(process.env.MONGO_URI, { useUnifiedTopology: true })
   } catch (error) {
@@ -10,6 +10,13 @@ export const connectDB = async () => {
   }
 }
 
-export const disconnectDB = () => client.close()
-export const getDBClient = () => client.db()
-export const getClient = () => client
+const disconnectDB = () => client.close()
+const getDBClient = () => client.db()
+const getClient = () => client
+
+module.exports = {
+  connectDB,
+  disconnectDB,
+  getDBClient,
+  getClient,
+}

@@ -4,8 +4,7 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "start": "npx nodemon bin/loadServices.js --exec babel-node --presets babel-preset-env",
-    "server": "npx babel-node bin/loadServices.js",
+    "start": "node bin/loadServices.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "repository": {
