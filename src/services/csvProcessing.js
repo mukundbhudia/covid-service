@@ -33,12 +33,12 @@ const processCsvFromSources = (csv_confirmedCases, csv_recoveredCases, csv_death
 
     let j = 0
     let daysCounter = 0
-    rowKeys.forEach((key) => {
-      if (key.match(/^\d{1,2}\/\d{1,2}\/\d{1,2}$/g)) {
+    rowKeys.forEach((date) => {
+      if (date.match(/^\d{1,2}\/\d{1,2}\/\d{1,2}$/g)) {
         daysCounter ++
-        const parsedConfirmed = parseInt(confirmedCase[key], 10)
-        const parsedRecovered = parseInt(recoveredCases[key], 10)
-        const parsedDeaths = parseInt(deathCases[key], 10)
+        const parsedConfirmed = parseInt(confirmedCase[date], 10)
+        const parsedRecovered = parseInt(recoveredCases[date], 10)
+        const parsedDeaths = parseInt(deathCases[date], 10)
         const parsedActive = parsedConfirmed - parsedRecovered - parsedDeaths
 
         if (Number.isInteger(parsedConfirmed) && Number.isInteger(parsedRecovered) && Number.isInteger(parsedDeaths) && Number.isInteger(parsedActive)) {
@@ -52,20 +52,20 @@ const processCsvFromSources = (csv_confirmedCases, csv_recoveredCases, csv_death
             recovered: parsedRecovered,
             deaths: parsedDeaths,
             active: parsedActive,
-            day: key
+            day: date
           }
   
           processedData.casesByDate.push(casesTotalPerDay)
   
           if (
-            stats.globalCasesByDate[key]
+            stats.globalCasesByDate[date]
           ) {
-            stats.globalCasesByDate[key].confirmed += parsedConfirmed
-            stats.globalCasesByDate[key].recovered += parsedRecovered
-            stats.globalCasesByDate[key].deaths += parsedDeaths
-            stats.globalCasesByDate[key].active += parsedActive
+            stats.globalCasesByDate[date].confirmed += parsedConfirmed
+            stats.globalCasesByDate[date].recovered += parsedRecovered
+            stats.globalCasesByDate[date].deaths += parsedDeaths
+            stats.globalCasesByDate[date].active += parsedActive
           } else {
-            stats.globalCasesByDate[key] = { 
+            stats.globalCasesByDate[date] = { 
               confirmed: 0,
               recovered: 0,
               deaths: 0,
