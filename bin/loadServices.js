@@ -39,34 +39,58 @@ const timeSeriesData = async () => {
 }
 
 const casesByLocation = async () => {
-  const { data } = await getGisCasesByCountry()
-  return data.features.map(({ attributes }) => ({
-    active: attributes.Active,
-    confirmed: attributes.Confirmed,
-    country: attributes.Country_Region,
-    deaths: attributes.Deaths,
-    lastUpdate: attributes.Last_Update,
-    latitude: attributes.Lat,
-    longitude: attributes.Long_,
-    // objectId: attributes.OBJECTID,
-    province: attributes.Province_State,
-    recovered: attributes.Recovered
-  }))
+  try {
+    const { data } = await getGisCasesByCountry()
+    return data.features.map(({ attributes }) => ({
+      active: attributes.Active,
+      confirmed: attributes.Confirmed,
+      country: attributes.Country_Region,
+      deaths: attributes.Deaths,
+      lastUpdate: attributes.Last_Update,
+      latitude: attributes.Lat,
+      longitude: attributes.Long_,
+      // objectId: attributes.OBJECTID,
+      province: attributes.Province_State,
+      recovered: attributes.Recovered
+    }))
+  } catch (err) {
+    console.log(err)
+    logger.error(err)
+    return []
+  }
 }
 
 const totalConfirmed = async () => {
-  const { data } = await getGisTotalConfirmed()
-  return data.features[0].attributes.value
+  try {
+    const { data } = await getGisTotalConfirmed()
+    return data.features[0].attributes.value
+  } catch (err) {
+    console.log(err)
+    logger.error(err)
+    return 0
+  }
 }
 
 const totalRecovered = async () => {
-  const { data } = await getGisTotalRecovered()
-  return data.features[0].attributes.value
+  try {
+    const { data } = await getGisTotalRecovered()
+    return data.features[0].attributes.value
+  } catch (err) {
+    console.log(err)
+    logger.error(err)
+    return 0
+  }
 }
 
 const totalDeaths = async () => {
-  const { data } = await getGisTotalDeaths()
-  return data.features[0].attributes.value
+  try {
+    const { data } = await getGisTotalDeaths()
+    return data.features[0].attributes.value
+  } catch (err) {
+    console.log(err)
+    logger.error(err)
+    return 0
+  }
 }
 
 const replaceGis = async () => {
@@ -104,11 +128,14 @@ const replaceGis = async () => {
     timeSeriesCases.collection.forEach((ghCase) => {
       cases.forEach((gisCase) => {
         if (gisCase.country === ghCase.countryRegion) {
-          if ((gisCase.province === ghCase.provinceState) || (gisCase.province === null && ghCase.provinceState === '')) {
-            if (gisCase.province !== null) {
-              gisCase.provincesList = [gisCase.province]
+          if ((gisCase.province === ghCase.provinceState) ||
+            (gisCase.province === null && ghCase.provinceState === '') ||
+            (gisCase.province === null && ghCase.provinceState === ghCase.countryRegion) ) 
+          {            
+            if (gisCase.province !== null && ghCase.provinceState !== ghCase.countryRegion) {
+              gisCase.provincesList = []
               gisCase.idKey = (gisCase.country + ' ' + gisCase.province).replace(/,/g, '').replace(/\s+/g, '-').toLowerCase()
-            } else {
+            } else {              
               gisCase.provincesList = []
               gisCase.idKey = (gisCase.country).replace(/,/g, '').replace(/\s+/g, '-').toLowerCase()
             }
