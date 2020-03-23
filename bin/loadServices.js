@@ -48,7 +48,7 @@ const casesByLocation = async () => {
     lastUpdate: attributes.Last_Update,
     latitude: attributes.Lat,
     longitude: attributes.Long_,
-    objectId: attributes.OBJECTID,
+    // objectId: attributes.OBJECTID,
     province: attributes.Province_State,
     recovered: attributes.Recovered
   }))
@@ -105,15 +105,20 @@ const replaceGis = async () => {
       cases.forEach((gisCase) => {
         if (gisCase.country === ghCase.countryRegion) {
           if ((gisCase.province === ghCase.provinceState) || (gisCase.province === null && ghCase.provinceState === '')) {
+            if (gisCase.province !== null) {
+              gisCase.provincesList = [gisCase.province]
+            } else {
+              gisCase.provincesList = []
+            }
             if (countryFoundMap[gisCase.country]) { // More than one country so it'll have many provinces/regions
-              countryFoundMap[gisCase.country].provincesCount += 1
+            
+              countryFoundMap[gisCase.country].provincesList.push(gisCase.province)
               countryFoundMap[gisCase.country].confirmed += gisCase.confirmed
               countryFoundMap[gisCase.country].active += gisCase.active
               countryFoundMap[gisCase.country].recovered += gisCase.recovered
               countryFoundMap[gisCase.country].deaths += gisCase.deaths
             } else {
               countryFoundMap[gisCase.country] = {
-                provincesCount: 0,
                 active: gisCase.active,
                 confirmed: gisCase.confirmed,
                 country: gisCase.country,
@@ -122,7 +127,13 @@ const replaceGis = async () => {
                 latitude: gisCase.latitude,
                 longitude: gisCase.longitude,
                 province: null,
-                recovered: gisCase.recovered
+                recovered: gisCase.recovered,
+                casesByDate: ghCase.casesByDate,
+              }
+              if (countryFoundMap[gisCase.country].province === null) {
+                countryFoundMap[gisCase.country].provincesList = []
+              } else {
+                countryFoundMap[gisCase.country].provincesList = [gisCase.province]
               }
             }
             gisCase.casesByDate = ghCase.casesByDate
@@ -131,16 +142,17 @@ const replaceGis = async () => {
         }
       })
     })
+
     const allCountriesFound = Object.keys(countryFoundMap)
     allTotals.allCountries = allCountriesFound
     allCountriesFound.forEach((countryName) => {
       let countryWithProvince = countryFoundMap[countryName]
-      if (countryWithProvince.provincesCount > 0) {
+      if (countryWithProvince.provincesList.length > 0) {
         combinedCountryCasesWithTimeSeries.push(countryWithProvince)
       }
     })
 
-    logger.info(`Countries/Regions total: ${combinedCountryCasesWithTimeSeries.length}. (From ${cases.length} GIS cases and ${timeSeriesCases.collection.length} GH cases)`)
+    logger.info(`Countries/Regions total: ${combinedCountryCasesWithTimeSeries.length}. Total distinct countries: ${allCountriesFound.length}. (From ${cases.length} GIS cases and ${timeSeriesCases.collection.length} GH cases)`)
 
     await session.withTransaction(async () => {
       await dbClient.collection('totals').deleteMany({})
