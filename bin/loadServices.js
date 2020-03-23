@@ -117,6 +117,17 @@ const replaceGis = async () => {
               countryFoundMap[gisCase.country].active += gisCase.active
               countryFoundMap[gisCase.country].recovered += gisCase.recovered
               countryFoundMap[gisCase.country].deaths += gisCase.deaths
+
+              countryFoundMap[gisCase.country].casesByDate.forEach((caseByDate) => {
+                ghCase.casesByDate.forEach((ghCaseByDate) => {
+                  if (ghCaseByDate.day === caseByDate.day) {
+                    caseByDate.confirmed += ghCaseByDate.confirmed
+                    caseByDate.active += ghCaseByDate.active
+                    caseByDate.recovered += ghCaseByDate.recovered
+                    caseByDate.deaths += ghCaseByDate.deaths
+                  }
+                })
+              })
             } else {
               countryFoundMap[gisCase.country] = {
                 active: gisCase.active,
