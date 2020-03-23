@@ -190,20 +190,6 @@ const fetchAndReplace = () => {
   } 
 }
 
-const SERVICE_FETCH_INTERVAL_IN_MINS = 30
-
 // Initial load
 logger.info("Service loader started...")
 fetchAndReplace()
-
-setInterval(() => {
-  try {
-    fetchAndReplace()
-  } catch (err) {
-    logger.error(err)
-  }
-}, 1000 * 60 * SERVICE_FETCH_INTERVAL_IN_MINS)
-
-module.exports = {
-  fetchAndReplace: fetchAndReplace
-}
