@@ -107,8 +107,10 @@ const replaceGis = async () => {
           if ((gisCase.province === ghCase.provinceState) || (gisCase.province === null && ghCase.provinceState === '')) {
             if (gisCase.province !== null) {
               gisCase.provincesList = [gisCase.province]
+              gisCase.idKey = (gisCase.country + ' ' + gisCase.province).replace(/,/g, '').replace(/\s+/g, '-').toLowerCase()
             } else {
               gisCase.provincesList = []
+              gisCase.idKey = (gisCase.country).replace(/,/g, '').replace(/\s+/g, '-').toLowerCase()
             }
             if (countryFoundMap[gisCase.country]) { // More than one country so it'll have many provinces/regions
             
@@ -130,6 +132,7 @@ const replaceGis = async () => {
               })
             } else {
               countryFoundMap[gisCase.country] = {
+                idKey: (gisCase.country).replace(/\s+/g, '-').toLowerCase(),
                 active: gisCase.active,
                 confirmed: gisCase.confirmed,
                 country: gisCase.country,
