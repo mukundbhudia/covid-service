@@ -2,15 +2,15 @@ const { MongoClient } = require('mongodb')
 const logger = require('../logger').initLogger()
 
 let client
-
-let dbURI = process.env.MONGO_URI
 let dbName = 'covid19'
 
-if (process.env.LOCAL) {
-  dbURI = 'mongodb://localhost:27017'
-}
-
 const connectDB = async () => {
+  let dbURI = process.env.MONGO_URI
+
+  if (process.env.LOCAL) {
+    dbURI = 'mongodb://localhost:27017'
+  }
+
   try {
     client = await MongoClient.connect(dbURI, { useUnifiedTopology: true })
   } catch (error) {
