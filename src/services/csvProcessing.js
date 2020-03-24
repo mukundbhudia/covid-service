@@ -1,6 +1,20 @@
 const csv2json = require('csvjson-csv2json')
 const logger = require('../../logger').initLogger()
 
+const sortAlphabeticallyByCountryName = (casesArray) => {
+  return casesArray.sort((a, b) => {
+    var nameA = a['Country/Region'].trim().toUpperCase(); // ignore upper and lowercase
+    var nameB = b['Country/Region'].trim().toUpperCase(); // ignore upper and lowercase
+    if (nameA < nameB) {
+      return -1
+    }
+    if (nameA > nameB) {
+      return 1
+    }
+    return 0
+  })
+}
+
 const processCsvFromSources = (csv_confirmedCases, csv_recoveredCases, csv_deathCases) => {
   let collection = []
   let badRows = 0
@@ -100,9 +114,18 @@ const combineDataFromSources = (confirmedCasesSource, recoveredCasesSource, deat
     jsonCsv_confirmedCases.length === jsonCsv_deathCases.length &&
     jsonCsv_recoveredCases.length === jsonCsv_deathCases.length) 
   {
-    return processCsvFromSources(jsonCsv_confirmedCases, jsonCsv_recoveredCases, jsonCsv_deathCases)
+    const sortedConfirmed = sortAlphabeticallyByCountryName(jsonCsv_confirmedCases)
+    const sortedRecovered = sortAlphabeticallyByCountryName(jsonCsv_recoveredCases)
+    const sortedDeaths = sortAlphabeticallyByCountryName(jsonCsv_deathCases)
+    
+    return processCsvFromSources(sortedConfirmed, sortedRecovered, sortedDeaths)
   } else {
-    console.error("CSV data from multiple sources differs in length")
+    logger.error(
+      `CSV data from multiple sources differs in length. Confirmed: ${jsonCsv_confirmedCases.length}, recovered: ${jsonCsv_recoveredCases.length}, deaths: ${jsonCsv_deathCases.length}`
+    )
+    console.error(
+      `CSV data from multiple sources differs in length. Confirmed: ${jsonCsv_confirmedCases.length}, recovered: ${jsonCsv_recoveredCases.length}, deaths: ${jsonCsv_deathCases.length}`
+    )
     return null
   }
 }

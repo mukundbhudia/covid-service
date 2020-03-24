@@ -106,22 +106,21 @@ const replaceGis = async () => {
   const recovered = await totalRecovered()
   const deaths = await totalDeaths()
 
-  const allTotals = {
-    confirmed: confirmed,
-    recovered: recovered,
-    deaths: deaths,
-    active: confirmed - (recovered + deaths),
-    allCountries: [],
-    timeSeriesTotalCasesByDate: timeSeriesCases.stats.globalCasesByDate,
-    timeStamp: new Date(),
-  }
-
   if (timeSeriesCases && cases &&
     cases.length > 0 &&
-    allTotals.confirmed > 0 &&
-    allTotals.recovered > 0 &&
-    allTotals.deaths > 0
+    confirmed > 0 &&
+    recovered > 0 &&
+    deaths > 0
   ) {
+    const allTotals = {
+      confirmed: confirmed,
+      recovered: recovered,
+      deaths: deaths,
+      active: confirmed - (recovered + deaths),
+      allCountries: [],
+      timeSeriesTotalCasesByDate: timeSeriesCases.stats.globalCasesByDate,
+      timeStamp: new Date(),
+    }
     let combinedCountryCasesWithTimeSeries = []
     let countryFoundMap = {}
 
