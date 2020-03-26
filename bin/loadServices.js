@@ -149,8 +149,9 @@ const replaceGis = async () => {
               if (gisCase.province === null) {
                 gisCase.province = 'mainland'
                 gisCase.idKey = (gisCase.country + ' ' + gisCase.province).replace(/,/g, '').replace(/\s+/g, '-').toLowerCase()
-              }   
-              countryFoundMap[gisCase.country].provincesList.push(gisCase.province)
+              }
+              gisCase.hasProvince = true
+              countryFoundMap[gisCase.country].provincesList.push(gisCase.idKey)
               countryFoundMap[gisCase.country].confirmed += gisCase.confirmed
               countryFoundMap[gisCase.country].active += gisCase.active
               countryFoundMap[gisCase.country].recovered += gisCase.recovered
@@ -179,10 +180,12 @@ const replaceGis = async () => {
                 province: null,
                 recovered: gisCase.recovered,
                 casesByDate: ghCase.casesByDate,
-                provincesList: []
+                provincesList: [],
+                hasProvince: false
               }
               if (gisCase.province !== null) {
-                countryFoundMap[gisCase.country].provincesList.push(gisCase.province)
+                gisCase.hasProvince = true
+                countryFoundMap[gisCase.country].provincesList.push(gisCase.idKey)
               }
             }
             gisCase.casesByDate = ghCase.casesByDate
