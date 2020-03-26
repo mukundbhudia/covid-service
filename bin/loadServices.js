@@ -141,16 +141,18 @@ const replaceGis = async () => {
 
             gisCase.provincesList = []
             if (gisCase.province !== null && ghCase.provinceState !== ghCase.countryRegion) {
+              gisCase.hasProvince = false
               gisCase.idKey = (gisCase.country + ' ' + gisCase.province).replace(/,/g, '').replace(/\s+/g, '-').toLowerCase()
             } else {
+              gisCase.hasProvince = false
               gisCase.idKey = (gisCase.country).replace(/,/g, '').replace(/\s+/g, '-').toLowerCase()
             }
             if (countryFoundMap[gisCase.country]) { // More than one country so it'll have many provinces/regions
               if (gisCase.province === null) {
                 gisCase.province = 'mainland'
+                gisCase.hasProvince = false
                 gisCase.idKey = (gisCase.country + ' ' + gisCase.province).replace(/,/g, '').replace(/\s+/g, '-').toLowerCase()
               }
-              gisCase.hasProvince = false
               countryFoundMap[gisCase.country].provincesList.push(gisCase.idKey)
               countryFoundMap[gisCase.country].confirmed += gisCase.confirmed
               countryFoundMap[gisCase.country].active += gisCase.active
@@ -181,13 +183,12 @@ const replaceGis = async () => {
                 recovered: gisCase.recovered,
                 casesByDate: ghCase.casesByDate,
                 provincesList: [],
-                hasProvince: false
+                hasProvince: true
               }
               if (gisCase.province !== null) {
-                gisCase.hasProvince = true
-                countryFoundMap[gisCase.country].provincesList.push(gisCase.idKey)
-              } else {
                 gisCase.hasProvince = false
+                countryFoundMap[gisCase.country].hasProvince = true
+                countryFoundMap[gisCase.country].provincesList.push(gisCase.idKey)
               }
             }
             gisCase.casesByDate = ghCase.casesByDate
