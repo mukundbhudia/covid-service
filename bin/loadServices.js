@@ -20,21 +20,28 @@ const {
 require('dotenv').config()
 
 const timeSeriesData = async () => {
-  const confirmedCases = await getGhTimeSeriesConfirmed()
-  // const recoveredCases = await getGhTimeSeriesRecovered()
-  const deathCases = await getGhTimeSeriesDeaths()
-  const result = processing.combineDataFromSources(confirmedCases.data, deathCases.data)
-  if (result) {
-    const keys = Object.keys(result.stats.globalCasesByDate)
-    const timeSeries = []
-    keys.forEach(day => {
-      result.stats.globalCasesByDate[day].day = day
-      timeSeries.push(result.stats.globalCasesByDate[day])
-    })
-    result.stats.globalCasesByDate = timeSeries
+  let result = null
+  try {
+    const confirmedCases = await getGhTimeSeriesConfirmed()
+    // const recoveredCases = await getGhTimeSeriesRecovered()
+    const deathCases = await getGhTimeSeriesDeaths()
+    result = processing.combineDataFromSources(confirmedCases.data, deathCases.data)
+    if (result) {
+      const keys = Object.keys(result.stats.globalCasesByDate)
+      const timeSeries = []
+      keys.forEach(day => {
+        result.stats.globalCasesByDate[day].day = day
+        timeSeries.push(result.stats.globalCasesByDate[day])
+      })
+      result.stats.globalCasesByDate = timeSeries
+      return result
+    } else {
+      return result
+    }
+  } catch (error) {
+    console.log(error)
+    logger.error(error)
     return result
-  } else {
-    return null
   }
 }
 

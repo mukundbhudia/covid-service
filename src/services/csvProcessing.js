@@ -59,7 +59,7 @@ const processCsvFromSources = (csv_confirmedCases, csv_deathCases) => {
         if (Number.isInteger(parsedConfirmed) && Number.isInteger(parsedDeaths)) {
           if (Math.sign(parsedConfirmed) === -1 || Math.sign(parsedDeaths) === -1) {
             badRows++
-            logger.error(`${countryRegion} in ${provinceState} is bad`)
+            logger.error(`${countryRegion} in ${provinceState} has a negative value`)
           }
           
           const casesTotalPerDay  = { 
@@ -101,7 +101,7 @@ const processCsvFromSources = (csv_confirmedCases, csv_deathCases) => {
     });
     collection.push(processedData)
   }
-  if (badRows > 0) { logger.error(`Found ${badRows} badRows`) }
+  if (badRows > 0) { logger.error(`Found ${badRows} CSV rows containing a negative value`) }
   return { stats: stats, collection: collection }
 }
 
