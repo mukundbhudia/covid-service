@@ -20,21 +20,28 @@ const {
 require('dotenv').config()
 
 const timeSeriesData = async () => {
-  const confirmedCases = await getGhTimeSeriesConfirmed()
-  const recoveredCases = await getGhTimeSeriesRecovered()
-  const deathCases = await getGhTimeSeriesDeaths()
-  const result = processing.combineDataFromSources(confirmedCases.data, recoveredCases.data, deathCases.data)
-  if (result) {
-    const keys = Object.keys(result.stats.globalCasesByDate)
-    const timeSeries = []
-    keys.forEach(day => {
-      result.stats.globalCasesByDate[day].day = day
-      timeSeries.push(result.stats.globalCasesByDate[day])
-    })
-    result.stats.globalCasesByDate = timeSeries
+  let result = null
+  try {
+    const confirmedCases = await getGhTimeSeriesConfirmed()
+    // const recoveredCases = await getGhTimeSeriesRecovered()
+    const deathCases = await getGhTimeSeriesDeaths()
+    result = processing.combineDataFromSources(confirmedCases.data, deathCases.data)
+    if (result) {
+      const keys = Object.keys(result.stats.globalCasesByDate)
+      const timeSeries = []
+      keys.forEach(day => {
+        result.stats.globalCasesByDate[day].day = day
+        timeSeries.push(result.stats.globalCasesByDate[day])
+      })
+      result.stats.globalCasesByDate = timeSeries
+      return result
+    } else {
+      return result
+    }
+  } catch (error) {
+    console.log(error)
+    logger.error(error)
     return result
-  } else {
-    return null
   }
 }
 
@@ -135,14 +142,14 @@ const replaceGis = async () => {
             gisCase.provincesList = []
             if (gisCase.province !== null && ghCase.provinceState !== ghCase.countryRegion) {
               gisCase.idKey = (gisCase.country + ' ' + gisCase.province).replace(/,/g, '').replace(/\s+/g, '-').toLowerCase()
-            } else if (ghCase.provinceState === ghCase.countryRegion) {
-              gisCase.province = 'mainland'
-              gisCase.idKey = (gisCase.country + ' ' + gisCase.province).replace(/,/g, '').replace(/\s+/g, '-').toLowerCase()
             } else {
               gisCase.idKey = (gisCase.country).replace(/,/g, '').replace(/\s+/g, '-').toLowerCase()
             }
             if (countryFoundMap[gisCase.country]) { // More than one country so it'll have many provinces/regions
-            
+              if (gisCase.province === null) {
+                gisCase.province = 'mainland'
+                gisCase.idKey = (gisCase.country + ' ' + gisCase.province).replace(/,/g, '').replace(/\s+/g, '-').toLowerCase()
+              }   
               countryFoundMap[gisCase.country].provincesList.push(gisCase.province)
               countryFoundMap[gisCase.country].confirmed += gisCase.confirmed
               countryFoundMap[gisCase.country].active += gisCase.active
@@ -153,8 +160,8 @@ const replaceGis = async () => {
                 ghCase.casesByDate.forEach((ghCaseByDate) => {
                   if (ghCaseByDate.day === caseByDate.day) {
                     caseByDate.confirmed += ghCaseByDate.confirmed
-                    caseByDate.active += ghCaseByDate.active
-                    caseByDate.recovered += ghCaseByDate.recovered
+                    // caseByDate.active += ghCaseByDate.active
+                    // caseByDate.recovered += ghCaseByDate.recovered
                     caseByDate.deaths += ghCaseByDate.deaths
                   }
                 })

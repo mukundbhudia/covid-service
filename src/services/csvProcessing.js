@@ -15,20 +15,20 @@ const sortAlphabeticallyByCountryName = (casesArray) => {
   })
 }
 
-const processCsvFromSources = (csv_confirmedCases, csv_recoveredCases, csv_deathCases) => {
+const processCsvFromSources = (csv_confirmedCases, csv_deathCases) => {
   let collection = []
   let badRows = 0
   let stats = { 
     confirmed: 0,
-    recovered: 0,
+    // recovered: 0,
     deaths: 0,
-    active: 0,
+    // active: 0,
     globalCasesByDate: {},
   }
 
   for (let i = 0; i < csv_confirmedCases.length; i++) {
     const confirmedCase = csv_confirmedCases[i]
-    const recoveredCases = csv_recoveredCases[i]
+    // const recoveredCases = csv_recoveredCases[i]
     const deathCases = csv_deathCases[i]
 
     const countryRegion = confirmedCase['Country/Region'].trim()
@@ -52,21 +52,21 @@ const processCsvFromSources = (csv_confirmedCases, csv_recoveredCases, csv_death
       if (date.match(/^\d{1,2}\/\d{1,2}\/\d{1,2}$/g)) {
         daysCounter ++
         const parsedConfirmed = parseInt(confirmedCase[date], 10)
-        const parsedRecovered = parseInt(recoveredCases[date], 10)
+        // const parsedRecovered = parseInt(recoveredCases[date], 10)
         const parsedDeaths = parseInt(deathCases[date], 10)
-        const parsedActive = parsedConfirmed - parsedRecovered - parsedDeaths
+        // const parsedActive = parsedConfirmed - parsedRecovered - parsedDeaths
 
-        if (Number.isInteger(parsedConfirmed) && Number.isInteger(parsedRecovered) && Number.isInteger(parsedDeaths) && Number.isInteger(parsedActive)) {
-          if (Math.sign(parsedConfirmed) === -1 || Math.sign(parsedRecovered) === -1 || Math.sign(parsedDeaths) === -1) {
+        if (Number.isInteger(parsedConfirmed) && Number.isInteger(parsedDeaths)) {
+          if (Math.sign(parsedConfirmed) === -1 || Math.sign(parsedDeaths) === -1) {
             badRows++
-            logger.error(`${countryRegion} in ${provinceState} is bad`)
+            logger.error(`${countryRegion} in ${provinceState} has a negative value`)
           }
           
           const casesTotalPerDay  = { 
             confirmed: parsedConfirmed,
-            recovered: parsedRecovered,
+            // recovered: parsedRecovered,
             deaths: parsedDeaths,
-            active: parsedActive,
+            // active: parsedActive,
             day: date
           }
   
@@ -76,23 +76,23 @@ const processCsvFromSources = (csv_confirmedCases, csv_recoveredCases, csv_death
             stats.globalCasesByDate[date]
           ) {
             stats.globalCasesByDate[date].confirmed += parsedConfirmed
-            stats.globalCasesByDate[date].recovered += parsedRecovered
+            // stats.globalCasesByDate[date].recovered += parsedRecovered
             stats.globalCasesByDate[date].deaths += parsedDeaths
-            stats.globalCasesByDate[date].active += parsedActive
+            // stats.globalCasesByDate[date].active += parsedActive
           } else {
             stats.globalCasesByDate[date] = { 
               confirmed: 0,
-              recovered: 0,
+              // recovered: 0,
               deaths: 0,
-              active: 0,
+              // active: 0,
             }        
           }
   
           if (j + 1 === rowKeys.length) {
             stats.confirmed += parsedConfirmed
-            stats.recovered += parsedRecovered
+            // stats.recovered += parsedRecovered
             stats.deaths += parsedDeaths
-            stats.active += parsedActive
+            // stats.active += parsedActive
             stats.daysSinceFirstCase = daysCounter
           }
         }
@@ -101,31 +101,27 @@ const processCsvFromSources = (csv_confirmedCases, csv_recoveredCases, csv_death
     });
     collection.push(processedData)
   }
-  if (badRows > 0) { logger.error(`Found ${badRows} badRows`) }
+  if (badRows > 0) { logger.error(`Found ${badRows} CSV rows containing a negative value`) }
   return { stats: stats, collection: collection }
 }
 
-const combineDataFromSources = (confirmedCasesSource, recoveredCasesSource, deathCasesSource) => {
+const combineDataFromSources = (confirmedCasesSource, deathCasesSource) => {
   const jsonCsv_confirmedCases = csv2json(confirmedCasesSource)
-  const jsonCsv_recoveredCases = csv2json(recoveredCasesSource)
+  // const jsonCsv_recoveredCases = csv2json(recoveredCasesSource)
   const jsonCsv_deathCases = csv2json(deathCasesSource)
 
-  if (jsonCsv_confirmedCases.length === jsonCsv_recoveredCases.length &&
-    jsonCsv_confirmedCases.length === jsonCsv_deathCases.length &&
-    jsonCsv_recoveredCases.length === jsonCsv_deathCases.length) 
+  if (
+    jsonCsv_confirmedCases.length === jsonCsv_deathCases.length) 
   {
     const sortedConfirmed = sortAlphabeticallyByCountryName(jsonCsv_confirmedCases)
-    const sortedRecovered = sortAlphabeticallyByCountryName(jsonCsv_recoveredCases)
+    // const sortedRecovered = sortAlphabeticallyByCountryName(jsonCsv_recoveredCases)
     const sortedDeaths = sortAlphabeticallyByCountryName(jsonCsv_deathCases)
     
-    return processCsvFromSources(sortedConfirmed, sortedRecovered, sortedDeaths)
+    return processCsvFromSources(sortedConfirmed, sortedDeaths)
   } else {
-    logger.error(
-      `CSV data from multiple sources differs in length. Confirmed: ${jsonCsv_confirmedCases.length}, recovered: ${jsonCsv_recoveredCases.length}, deaths: ${jsonCsv_deathCases.length}`
-    )
-    console.error(
-      `CSV data from multiple sources differs in length. Confirmed: ${jsonCsv_confirmedCases.length}, recovered: ${jsonCsv_recoveredCases.length}, deaths: ${jsonCsv_deathCases.length}`
-    )
+    const errorMsg = `CSV data from multiple sources differs in length. Confirmed: ${jsonCsv_confirmedCases.length}, deaths: ${jsonCsv_deathCases.length}`
+    logger.error(errorMsg)
+    console.error(errorMsg)
     return null
   }
 }
