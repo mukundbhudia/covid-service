@@ -150,7 +150,7 @@ const replaceGis = async () => {
                 gisCase.province = 'mainland'
                 gisCase.idKey = (gisCase.country + ' ' + gisCase.province).replace(/,/g, '').replace(/\s+/g, '-').toLowerCase()
               }
-              gisCase.hasProvince = true
+              gisCase.hasProvince = false
               countryFoundMap[gisCase.country].provincesList.push(gisCase.idKey)
               countryFoundMap[gisCase.country].confirmed += gisCase.confirmed
               countryFoundMap[gisCase.country].active += gisCase.active
@@ -186,6 +186,8 @@ const replaceGis = async () => {
               if (gisCase.province !== null) {
                 gisCase.hasProvince = true
                 countryFoundMap[gisCase.country].provincesList.push(gisCase.idKey)
+              } else {
+                gisCase.hasProvince = false
               }
             }
             gisCase.casesByDate = ghCase.casesByDate
