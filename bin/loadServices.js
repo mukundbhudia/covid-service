@@ -170,6 +170,11 @@ const replaceGis = async () => {
                 })
               })
             } else {
+              if (gisCase.province === null) {
+                gisCase.province = 'mainland'
+                gisCase.hasProvince = false
+                gisCase.idKey = (gisCase.country + ' ' + gisCase.province).replace(/,/g, '').replace(/\s+/g, '-').toLowerCase()
+              }
               countryFoundMap[gisCase.country] = {
                 idKey: (gisCase.country).replace(/\s+/g, '-').toLowerCase(),
                 active: gisCase.active,
