@@ -143,6 +143,10 @@ const replaceGis = async () => {
             if (gisCase.province !== null && ghCase.provinceState !== ghCase.countryRegion) {
               gisCase.hasProvince = false
               gisCase.idKey = (gisCase.country + ' ' + gisCase.province).replace(/,/g, '').replace(/\s+/g, '-').toLowerCase()
+            } else if (gisCase.province === null && ghCase.provinceState === ghCase.countryRegion) {
+              gisCase.province = 'mainland'
+              gisCase.hasProvince = false
+              gisCase.idKey = (gisCase.country + ' ' + gisCase.province).replace(/,/g, '').replace(/\s+/g, '-').toLowerCase()
             } else {
               gisCase.hasProvince = false
               gisCase.idKey = (gisCase.country).replace(/,/g, '').replace(/\s+/g, '-').toLowerCase()
