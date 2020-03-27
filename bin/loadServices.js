@@ -178,9 +178,11 @@ const replaceGis = async () => {
                 gisCase.province = 'mainland'
                 gisCase.hasProvince = false
                 gisCase.idKey = (gisCase.country + ' ' + gisCase.province).replace(/,/g, '').replace(/\s+/g, '-').toLowerCase()
+              } else if (ghCase.provinceState === ghCase.countryRegion) {
+                gisCase.idKey = (gisCase.country).replace(/,/g, '').replace(/\s+/g, '-').toLowerCase()
               }
               countryFoundMap[gisCase.country] = {
-                idKey: (gisCase.country).replace(/\s+/g, '-').toLowerCase(),
+                idKey: (gisCase.country).replace(/,/g, '').replace(/\s+/g, '-').toLowerCase(),
                 active: gisCase.active,
                 confirmed: gisCase.confirmed,
                 country: gisCase.country,
