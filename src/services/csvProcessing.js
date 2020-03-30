@@ -46,9 +46,8 @@ const processCsvFromSources = (csv_confirmedCases, csv_deathCases) => {
       casesByDate: []
     }
 
-    let j = 0
     let daysCounter = 0
-    rowKeys.forEach((date) => {
+    rowKeys.forEach((date, j) => {
       if (date.match(/^\d{1,2}\/\d{1,2}\/\d{1,2}$/g)) {
         daysCounter ++
         const parsedConfirmed = parseInt(confirmedCase[date], 10)
@@ -61,13 +60,30 @@ const processCsvFromSources = (csv_confirmedCases, csv_deathCases) => {
             badRows++
             logger.error(`${countryRegion} in ${provinceState} has a negative value`)
           }
-          
+
+          let confirmedCasesToday = 0
+          let deathsToday = 0
+
+          if (daysCounter > 1) {
+            const dayBefore = rowKeys[j-1]
+            const parsedConfirmedDayBefore = parseInt(confirmedCase[dayBefore], 10)
+            const parsedDeathDayBefore = parseInt(deathCases[dayBefore], 10)
+            if (parsedConfirmed > parsedConfirmedDayBefore) {
+              confirmedCasesToday = parsedConfirmed - parsedConfirmedDayBefore
+            }
+            if (parsedDeaths > parsedDeathDayBefore) {
+              deathsToday = parsedDeaths - parsedDeathDayBefore
+            }
+          }
+
           const casesTotalPerDay  = { 
             confirmed: parsedConfirmed,
             // recovered: parsedRecovered,
             deaths: parsedDeaths,
             // active: parsedActive,
-            day: date
+            confirmedCasesToday: confirmedCasesToday,
+            deathsToday: deathsToday,
+            day: date,
           }
   
           processedData.casesByDate.push(casesTotalPerDay)
@@ -79,15 +95,20 @@ const processCsvFromSources = (csv_confirmedCases, csv_deathCases) => {
             // stats.globalCasesByDate[date].recovered += parsedRecovered
             stats.globalCasesByDate[date].deaths += parsedDeaths
             // stats.globalCasesByDate[date].active += parsedActive
+            stats.globalCasesByDate[date].confirmedCasesToday += confirmedCasesToday
+            stats.globalCasesByDate[date].deathsToday += deathsToday
           } else {
             stats.globalCasesByDate[date] = { 
               confirmed: 0,
               // recovered: 0,
               deaths: 0,
               // active: 0,
+              confirmedCasesToday: 0,
+              deathsToday: 0,
             }        
           }
-  
+
+          // The last day of the time series
           if (j + 1 === rowKeys.length) {
             stats.confirmed += parsedConfirmed
             // stats.recovered += parsedRecovered
@@ -97,8 +118,7 @@ const processCsvFromSources = (csv_confirmedCases, csv_deathCases) => {
           }
         }
       }
-      j ++
-    });
+    })
     collection.push(processedData)
   }
   if (badRows > 0) { logger.error(`Found ${badRows} CSV rows containing a negative value`) }
