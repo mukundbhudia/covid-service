@@ -1,14 +1,14 @@
 const csv2json = require('csvjson-csv2json')
 const logger = require('../../logger').initLogger()
 
-const sortAlphabeticallyByCountryName = (casesArray) => {
+const sortCountriesByProvinceStatus = (casesArray) => {
   return casesArray.sort((a, b) => {
-    var nameA = a['Country/Region'].trim().toUpperCase(); // ignore upper and lowercase
-    var nameB = b['Country/Region'].trim().toUpperCase(); // ignore upper and lowercase
-    if (nameA < nameB) {
+    const nameA = a['Province/State'].trim().toUpperCase()
+    const nameB = b['Province/State'].trim().toUpperCase()
+    if (nameA === '' && nameB !== '') {
       return -1
     }
-    if (nameA > nameB) {
+    if (nameA !== '' && nameB === '') {
       return 1
     }
     return 0
@@ -133,9 +133,9 @@ const combineDataFromSources = (confirmedCasesSource, deathCasesSource) => {
   if (
     jsonCsv_confirmedCases.length === jsonCsv_deathCases.length) 
   {
-    const sortedConfirmed = sortAlphabeticallyByCountryName(jsonCsv_confirmedCases)
-    // const sortedRecovered = sortAlphabeticallyByCountryName(jsonCsv_recoveredCases)
-    const sortedDeaths = sortAlphabeticallyByCountryName(jsonCsv_deathCases)
+    const sortedConfirmed = sortCountriesByProvinceStatus(jsonCsv_confirmedCases)
+    // const sortedRecovered = sortCountriesByProvinceStatus(jsonCsv_recoveredCases)
+    const sortedDeaths = sortCountriesByProvinceStatus(jsonCsv_deathCases)
     
     return processCsvFromSources(sortedConfirmed, sortedDeaths)
   } else {
