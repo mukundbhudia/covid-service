@@ -119,11 +119,15 @@ const replaceGis = async () => {
     recovered > 0 &&
     deaths > 0
   ) {
+    const globalConfirmedCasesToday = confirmed - timeSeriesCases.stats.globalCasesByDate[timeSeriesCases.stats.globalCasesByDate.length - 1].confirmed
+    const globalDeathsToday = deaths - timeSeriesCases.stats.globalCasesByDate[timeSeriesCases.stats.globalCasesByDate.length - 1].deaths
     const allTotals = {
       confirmed: confirmed,
       recovered: recovered,
       deaths: deaths,
       active: confirmed - (recovered + deaths),
+      confirmedCasesToday: globalConfirmedCasesToday,
+      deathsToday: globalDeathsToday,
       allCountries: [],
       timeSeriesTotalCasesByDate: timeSeriesCases.stats.globalCasesByDate,
       timeStamp: new Date(),
@@ -173,6 +177,8 @@ const replaceGis = async () => {
                   }
                 })
               })
+              countryFoundMap[gisCase.country].confirmedCasesToday = countryFoundMap[gisCase.country].confirmed - countryFoundMap[gisCase.country].casesByDate[countryFoundMap[gisCase.country].casesByDate.length - 1].confirmed
+              countryFoundMap[gisCase.country].deathsToday = countryFoundMap[gisCase.country].deaths - countryFoundMap[gisCase.country].casesByDate[countryFoundMap[gisCase.country].casesByDate.length - 1].deaths
             } else {
               if (gisCase.province === null && ghCase.provinceState === ghCase.countryRegion) {
                 gisCase.province = 'mainland'
@@ -187,6 +193,8 @@ const replaceGis = async () => {
                 confirmed: gisCase.confirmed,
                 country: gisCase.country,
                 deaths: gisCase.deaths,
+                confirmedCasesToday: gisCase.confirmed - ghCase.casesByDate[ghCase.casesByDate.length - 1].confirmed,
+                deathsToday: gisCase.deaths - ghCase.casesByDate[ghCase.casesByDate.length - 1].deaths,
                 lastUpdate: gisCase.lastUpdate,
                 latitude: gisCase.latitude,
                 longitude: gisCase.longitude,
@@ -203,6 +211,8 @@ const replaceGis = async () => {
               }
             }
             gisCase.casesByDate = ghCase.casesByDate
+            gisCase.confirmedCasesToday = gisCase.confirmed - gisCase.casesByDate[gisCase.casesByDate.length - 1].confirmed,
+            gisCase.deathsToday = gisCase.deaths - gisCase.casesByDate[gisCase.casesByDate.length - 1].deaths,
             combinedCountryCasesWithTimeSeries.push(gisCase)
           }
         }
