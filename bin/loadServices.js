@@ -75,6 +75,7 @@ const timeSeriesData = async () => {
     usResult = processing.combineDataFromSources('us', confirmedUsCases.data, deathUsCases.data)
     const globalData = result.collection
     usStateData = processUstimeSeriesData(usResult)
+    logger.info(`Processed ${usStateData.length} US states/regions...`)
     result.collection = globalData.concat(usStateData)
 
     if (result) {
