@@ -21,9 +21,47 @@ const {
 
 require('dotenv').config()
 
+const processUstimeSeriesData = (ghData) => {
+  const collectionByState = ghData.collection
+  const allUsDays = Object.keys(ghData.stats.globalCasesByDate)
+  let stateMap = {}
+  let allStates = []
+  collectionByState.forEach((row, i) => {
+    if (stateMap[row.provinceState]) {
+      allUsDays.forEach((day, j) => {
+        row.casesByDate.forEach((caseByDate, k) => {
+          if (day === caseByDate.day) {
+            stateMap[row.provinceState].casesByDate[j].confirmed += caseByDate.confirmed
+            // caseByDate.active += caseByDate.active
+            // caseByDate.recovered += caseByDate.recovered
+            stateMap[row.provinceState].casesByDate[j].confirmedCasesToday += caseByDate.confirmedCasesToday
+            stateMap[row.provinceState].casesByDate[j].deathsToday += caseByDate.deathsToday
+            stateMap[row.provinceState].casesByDate[j].deaths += caseByDate.deaths
+          }
+        })
+      })
+    } else {
+      stateMap[row.provinceState] = {
+        countryRegion: row.countryRegion,
+        provinceState: row.provinceState,
+        latitude: row.latitude,
+        longitude: row.longitude, // TODO: fix typo!
+        casesByDate: row.casesByDate,
+      }
+    }
+  })
+
+  const allStatesAsKeys = Object.keys(stateMap)
+  allStatesAsKeys.forEach((state) => {
+    allStates.push(stateMap[state])
+  })
+  return allStates
+}
+
 const timeSeriesData = async () => {
   let result = null
   let usResult = null
+  let usStateData = null
   try {
     const confirmedCases = await getGhTimeSeriesConfirmed()
     // const recoveredCases = await getGhTimeSeriesRecovered()
@@ -35,8 +73,10 @@ const timeSeriesData = async () => {
     result = processing.combineDataFromSources('global', confirmedCases.data, deathCases.data)
 
     usResult = processing.combineDataFromSources('us', confirmedUsCases.data, deathUsCases.data)
-    // console.log(usResult);
-    
+    const globalData = result.collection
+    usStateData = processUstimeSeriesData(usResult)
+    result.collection = globalData.concat(usStateData)
+
     if (result) {
       const keys = Object.keys(result.stats.globalCasesByDate)
       const timeSeries = []
@@ -224,6 +264,11 @@ const replaceGis = async () => {
             item.idKey = item.idKey + '-mainland'
             item.province = 'mainland'
             countryWithProvince.provincesList.push({idKey: item.idKey, province: item.province})
+          }
+          if (countryWithProvince.lastUpdate === null && item.lastUpdate !== null) {
+            countryWithProvince.lastUpdate = item.lastUpdate
+          } else if (countryWithProvince.lastUpdate !== null && item.lastUpdate === null) {
+            item.lastUpdate = countryWithProvince.lastUpdate
           }
         })
         combinedCountryCasesWithTimeSeries.push(countryWithProvince)
