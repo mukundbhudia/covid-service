@@ -216,6 +216,8 @@ const replaceGis = async () => {
                     // caseByDate.active += ghCaseByDate.active
                     // caseByDate.recovered += ghCaseByDate.recovered
                     caseByDate.deaths += ghCaseByDate.deaths
+                    caseByDate.confirmedCasesToday += ghCaseByDate.confirmedCasesToday
+                    caseByDate.deathsToday += ghCaseByDate.deathsToday
                   }
                 })
               })
