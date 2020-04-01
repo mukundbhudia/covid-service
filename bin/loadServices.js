@@ -14,18 +14,29 @@ const {
 const {
   getGhTimeSeriesConfirmed,
   getGhTimeSeriesRecovered,
-  getGhTimeSeriesDeaths
+  getGhTimeSeriesDeaths,
+  getGhUS_TimeSeriesConfirmed,
+  getGhUS_TimeSeriesDeaths,
 } = require('../src/services/gitHub')
 
 require('dotenv').config()
 
 const timeSeriesData = async () => {
   let result = null
+  let usResult = null
   try {
     const confirmedCases = await getGhTimeSeriesConfirmed()
     // const recoveredCases = await getGhTimeSeriesRecovered()
     const deathCases = await getGhTimeSeriesDeaths()
-    result = processing.combineDataFromSources(confirmedCases.data, deathCases.data)
+
+    const confirmedUsCases = await getGhUS_TimeSeriesConfirmed()
+    const deathUsCases = await getGhUS_TimeSeriesDeaths()
+
+    result = processing.combineDataFromSources('global', confirmedCases.data, deathCases.data)
+
+    usResult = processing.combineDataFromSources('us', confirmedUsCases.data, deathUsCases.data)
+    // console.log(usResult);
+    
     if (result) {
       const keys = Object.keys(result.stats.globalCasesByDate)
       const timeSeries = []

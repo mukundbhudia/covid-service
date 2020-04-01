@@ -1,10 +1,17 @@
 const csv2json = require('csvjson-csv2json')
 const logger = require('../../logger').initLogger()
 
-const sortCountriesByProvinceStatus = (casesArray) => {
+const sortCountriesByProvinceStatus = (area, casesArray) => {
   return casesArray.sort((a, b) => {
-    const nameA = a['Province/State'].trim().toUpperCase()
-    const nameB = b['Province/State'].trim().toUpperCase()
+    let nameA = ''
+    let nameB = ''
+    if (area === 'us') {
+      nameA = a['Province_State'].trim().toUpperCase()
+      nameB = b['Province_State'].trim().toUpperCase()
+    } else {
+      nameA = a['Province/State'].trim().toUpperCase()
+      nameB = b['Province/State'].trim().toUpperCase()
+    }
     if (nameA === '' && nameB !== '') {
       return -1
     }
@@ -15,7 +22,7 @@ const sortCountriesByProvinceStatus = (casesArray) => {
   })
 }
 
-const processCsvFromSources = (csv_confirmedCases, csv_deathCases) => {
+const processCsvFromSources = (area, csv_confirmedCases, csv_deathCases) => {
   let collection = []
   let badRows = 0
   let stats = { 
@@ -31,10 +38,22 @@ const processCsvFromSources = (csv_confirmedCases, csv_deathCases) => {
     // const recoveredCases = csv_recoveredCases[i]
     const deathCases = csv_deathCases[i]
 
-    const countryRegion = confirmedCase['Country/Region'].trim()
-    const provinceState = confirmedCase['Province/State'].trim()
-    const latitude = confirmedCase['Lat']
-    const longtitude = confirmedCase['Long']
+    let countryRegion = ''
+    let provinceState = ''
+    let latitude = ''
+    let longtitude = ''
+
+    if (area === 'us') {
+      countryRegion = confirmedCase['Country_Region'].trim()
+      provinceState = confirmedCase['Province_State'].trim()
+      latitude = confirmedCase['Lat']
+      longtitude = confirmedCase['Long_']
+    } else {
+      countryRegion = confirmedCase['Country/Region'].trim()
+      provinceState = confirmedCase['Province/State'].trim()
+      latitude = confirmedCase['Lat']
+      longtitude = confirmedCase['Long']
+    }
   
     const rowKeys = Object.keys(confirmedCase)
   
@@ -48,7 +67,7 @@ const processCsvFromSources = (csv_confirmedCases, csv_deathCases) => {
 
     let daysCounter = 0
     rowKeys.forEach((date, j) => {
-      if (date.match(/^\d{1,2}\/\d{1,2}\/\d{1,2}$/g)) {
+      if (date.match(/^\d{1,2}\/\d{1,2}\/\d{1,4}$/g)) {        
         daysCounter ++
         const parsedConfirmed = parseInt(confirmedCase[date], 10)
         // const parsedRecovered = parseInt(recoveredCases[date], 10)
@@ -58,6 +77,7 @@ const processCsvFromSources = (csv_confirmedCases, csv_deathCases) => {
         if (Number.isInteger(parsedConfirmed) && Number.isInteger(parsedDeaths)) {
           if (Math.sign(parsedConfirmed) === -1 || Math.sign(parsedDeaths) === -1) {
             badRows++
+            console.error(`${countryRegion} in ${provinceState} has a negative value`)
             logger.error(`${countryRegion} in ${provinceState} has a negative value`)
           }
 
@@ -125,7 +145,7 @@ const processCsvFromSources = (csv_confirmedCases, csv_deathCases) => {
   return { stats: stats, collection: collection }
 }
 
-const combineDataFromSources = (confirmedCasesSource, deathCasesSource) => {
+const combineDataFromSources = (area, confirmedCasesSource, deathCasesSource) => {
   const jsonCsv_confirmedCases = csv2json(confirmedCasesSource)
   // const jsonCsv_recoveredCases = csv2json(recoveredCasesSource)
   const jsonCsv_deathCases = csv2json(deathCasesSource)
@@ -133,13 +153,13 @@ const combineDataFromSources = (confirmedCasesSource, deathCasesSource) => {
   if (
     jsonCsv_confirmedCases.length === jsonCsv_deathCases.length) 
   {
-    const sortedConfirmed = sortCountriesByProvinceStatus(jsonCsv_confirmedCases)
+    const sortedConfirmed = sortCountriesByProvinceStatus(area, jsonCsv_confirmedCases)
     // const sortedRecovered = sortCountriesByProvinceStatus(jsonCsv_recoveredCases)
-    const sortedDeaths = sortCountriesByProvinceStatus(jsonCsv_deathCases)
+    const sortedDeaths = sortCountriesByProvinceStatus(area, jsonCsv_deathCases)
     
-    return processCsvFromSources(sortedConfirmed, sortedDeaths)
+    return processCsvFromSources(area, sortedConfirmed, sortedDeaths)
   } else {
-    const errorMsg = `CSV data from multiple sources differs in length. Confirmed: ${jsonCsv_confirmedCases.length}, deaths: ${jsonCsv_deathCases.length}`
+    const errorMsg = `${area} CSV data from multiple sources differs in length. Confirmed: ${jsonCsv_confirmedCases.length}, deaths: ${jsonCsv_deathCases.length}`
     logger.error(errorMsg)
     console.error(errorMsg)
     return null
