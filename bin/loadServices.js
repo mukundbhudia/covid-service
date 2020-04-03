@@ -19,6 +19,8 @@ const {
   getGhUS_TimeSeriesDeaths,
 } = require('../src/services/gitHub')
 
+const alpha3CountryCodes = require('../src/alpha3-countryCodes_slim-3.json')
+
 require('dotenv').config()
 
 const processUstimeSeriesData = (ghData) => {
@@ -152,6 +154,39 @@ const totalDeaths = async () => {
   }
 }
 
+const getCountryCodeFromCountryName = (countryName) => {
+  let foundCountry = null
+  const exceptionsMap = {
+    'United Kingdom': 'GBR',
+    'US': 'USA',
+    'Iran': 'IRN',
+    'Bolivia': 'BOL',
+    'Venezuela': 'VEN',
+    'Brunei': 'BRN',
+    'Korea, South': 'KOR',
+    'Moldova': 'MDA',
+    'Russia': 'RUS',
+    'Syria': 'SYR',
+    'Vietnam': 'VNM',
+    'Tanzania': 'TZA',
+    'Taiwan*': 'TWN',
+    'Laos': 'LAO',
+    'Burma': 'MMR',
+    "Cote d'Ivoire": 'CIV',
+    'Congo (Brazzaville)': 'COG',
+    'Congo (Kinshasa)': 'COD',
+  }
+
+  alpha3CountryCodes.forEach(alphaCountry => {
+    if (alphaCountry.name === countryName) {
+      foundCountry = alphaCountry['alpha-3']
+    } else if (exceptionsMap[countryName]) {
+      foundCountry = exceptionsMap[countryName]
+    }
+  })
+  return foundCountry
+}
+
 const replaceGis = async () => {
   logger.info("Fetching data...")
   await connectDB()
@@ -194,7 +229,7 @@ const replaceGis = async () => {
             (gisCase.province === null && ghCase.provinceState === '') ||
             (gisCase.province === null && ghCase.provinceState === ghCase.countryRegion) ) 
           {
-
+            gisCase.countryCode = getCountryCodeFromCountryName(gisCase.country)
             gisCase.provincesList = []
             if (gisCase.province !== null && ghCase.provinceState !== ghCase.countryRegion) {
               gisCase.hasProvince = false
@@ -227,6 +262,7 @@ const replaceGis = async () => {
             } else {
               countryFoundMap[gisCase.country] = {
                 idKey: (gisCase.country).replace(/,/g, '').replace(/\s+/g, '-').toLowerCase(),
+                countryCode: gisCase.countryCode,
                 active: gisCase.active,
                 confirmed: gisCase.confirmed,
                 country: gisCase.country,
