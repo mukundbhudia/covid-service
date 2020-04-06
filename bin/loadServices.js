@@ -154,8 +154,8 @@ const totalDeaths = async () => {
   }
 }
 
-const getCountryCodeFromCountryName = (countryName) => {
-  let foundCountry = null
+const getCountryCodeFromCountryName = (countryName, province) => {
+  let foundCountryCode = null
   const exceptionsMap = {
     'United Kingdom': 'GBR',
     'US': 'USA',
@@ -179,12 +179,15 @@ const getCountryCodeFromCountryName = (countryName) => {
 
   alpha3CountryCodes.forEach(alphaCountry => {
     if (alphaCountry.name === countryName) {
-      foundCountry = alphaCountry['alpha-3']
+      foundCountryCode = alphaCountry['alpha-3']
+      if (province && province === 'Greenland') {
+        foundCountryCode = 'GRL'
+      }
     } else if (exceptionsMap[countryName]) {
-      foundCountry = exceptionsMap[countryName]
+      foundCountryCode = exceptionsMap[countryName]
     }
   })
-  return foundCountry
+  return foundCountryCode
 }
 
 const replaceGis = async () => {
@@ -229,7 +232,7 @@ const replaceGis = async () => {
             (gisCase.province === null && ghCase.provinceState === '') ||
             (gisCase.province === null && ghCase.provinceState === ghCase.countryRegion) ) 
           {
-            gisCase.countryCode = getCountryCodeFromCountryName(gisCase.country)
+            gisCase.countryCode = getCountryCodeFromCountryName(gisCase.country, gisCase.province)
             gisCase.provincesList = []
             if (gisCase.province !== null && ghCase.provinceState !== ghCase.countryRegion) {
               gisCase.hasProvince = false
