@@ -218,7 +218,7 @@ const replaceGis = async () => {
       active: confirmed - (recovered + deaths),
       confirmedCasesToday: globalConfirmedCasesToday,
       deathsToday: globalDeathsToday,
-      allCountries: [],
+      globalCasesByDate: {},
       timeSeriesTotalCasesByDate: timeSeriesCases.stats.globalCasesByDate,
       timeStamp: new Date(),
     }
@@ -296,8 +296,11 @@ const replaceGis = async () => {
       })
     })
 
+    const todayInUS_ShortFormat = (new Date()).toLocaleDateString('en-US', { year: '2-digit', month: 'numeric', day: 'numeric' })
+    let greenland = null
+    let globalCountryCasesByDate = {}
     const allCountriesFound = Object.keys(countryFoundMap)
-    allTotals.allCountries = allCountriesFound
+    // allTotals.allCountries = allCountriesFound
     allCountriesFound.forEach((countryName) => {
       let countryWithProvince = countryFoundMap[countryName]
       if (countryWithProvince.provincesList.length > 0) {
@@ -306,6 +309,12 @@ const replaceGis = async () => {
             item.idKey = item.idKey + '-mainland'
             item.province = 'mainland'
             countryWithProvince.provincesList.push({idKey: item.idKey, province: item.province})
+          }
+          if (item.idKey === 'denmark-greenland') {
+            greenland = Object.assign({}, item)
+            greenland.idKey = 'greenland'
+            greenland.country = 'Greenland'
+            greenland.province = null
           }
           if (countryWithProvince.lastUpdate === null && item.lastUpdate !== null) {
             countryWithProvince.lastUpdate = item.lastUpdate
@@ -316,6 +325,76 @@ const replaceGis = async () => {
         combinedCountryCasesWithTimeSeries.push(countryWithProvince)
       }
     })
+
+    if (greenland !== null) {
+      allCountriesFound.push(greenland.country)
+      countryFoundMap[greenland.country] = greenland
+    }
+
+    allCountriesFound.forEach((countryName) => {
+      let countryWithProvince = countryFoundMap[countryName]
+      countryWithProvince.casesByDate.forEach((caseByDate, i) => {
+        if (globalCountryCasesByDate[caseByDate.day]) {
+          globalCountryCasesByDate[caseByDate.day].casesOfTheDay.push({
+            idKey: countryWithProvince.idKey,
+            country: countryWithProvince.country,
+            countryCode: countryWithProvince.countryCode,
+            confirmed: caseByDate.confirmed,
+            deaths: caseByDate.deaths,
+            deathsToday: caseByDate.deathsToday,
+            confirmedCasesToday: caseByDate.confirmedCasesToday,
+          })
+        } else {
+          globalCountryCasesByDate[caseByDate.day] = {
+            day: caseByDate.day,
+            casesOfTheDay: [{
+              idKey: countryWithProvince.idKey,
+              country: countryWithProvince.country,
+              countryCode: countryWithProvince.countryCode,
+              confirmed: caseByDate.confirmed,
+              deaths: caseByDate.deaths,
+              deathsToday: caseByDate.deathsToday,
+              confirmedCasesToday: caseByDate.confirmedCasesToday,
+            }],
+          }
+        }
+      })
+    
+      if (globalCountryCasesByDate[todayInUS_ShortFormat]) {
+        globalCountryCasesByDate[todayInUS_ShortFormat].casesOfTheDay.push({
+          idKey: countryWithProvince.idKey,
+          country: countryWithProvince.country,
+          countryCode: countryWithProvince.countryCode,
+          confirmed: countryWithProvince.confirmed,
+          active: countryWithProvince.active,
+          recovered: countryWithProvince.confirmed,
+          deaths: countryWithProvince.deaths,
+          deathsToday: countryWithProvince.deathsToday,
+          confirmedCasesToday: countryWithProvince.confirmedCasesToday,
+        })
+      } else {
+        globalCountryCasesByDate[todayInUS_ShortFormat] = {
+          day: todayInUS_ShortFormat,
+          casesOfTheDay: [{
+            idKey: countryWithProvince.idKey,
+            country: countryWithProvince.country,
+            countryCode: countryWithProvince.countryCode,
+            confirmed: countryWithProvince.confirmed,
+            active: countryWithProvince.active,
+            recovered: countryWithProvince.confirmed,
+            deaths: countryWithProvince.deaths,
+            deathsToday: countryWithProvince.deathsToday,
+            confirmedCasesToday: countryWithProvince.confirmedCasesToday,
+          }],
+        }
+      }
+    })
+
+    let globalCountryCasesByDateArray = []
+    Object.keys(globalCountryCasesByDate).forEach((globalCase, i) => {
+      globalCountryCasesByDateArray.push(globalCountryCasesByDate[globalCase])
+    })
+    allTotals.globalCasesByDate = globalCountryCasesByDateArray
 
     logger.info(`Countries/Regions total: ${combinedCountryCasesWithTimeSeries.length}. Total distinct countries: ${allCountriesFound.length}. (From ${cases.length} GIS cases and ${timeSeriesCases.collection.length} GH cases)`)
 
