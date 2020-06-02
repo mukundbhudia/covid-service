@@ -23,7 +23,7 @@
     "axios": "^0.19.2",
     "csvjson-csv2json": "^5.0.6",
     "dotenv": "^8.2.0",
-    "mongodb": "^3.5.5",
+    "mongodb": "^3.5.8",
     "winston": "^3.2.1"
   },
   "devDependencies": {
@@ -32,6 +32,6 @@
     "babel-loader": "^8.0.6",
     "babel-node": "0.0.1-security",
     "babel-preset-env": "^1.7.0",
-    "nodemon": "^2.0.2"
+    "nodemon": "^2.0.4"
   }
 }
