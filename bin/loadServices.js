@@ -190,13 +190,57 @@ const getCountryCodeFromCountryName = (countryName, province) => {
   return foundCountryCode
 }
 
+const consolidatedCountries = (countries) => {
+  let visitedMap = {}
+  let output = []
+  countries.forEach((element, i) => {
+    if (visitedMap[element.country]) {
+      visitedMap[element.country].confirmed += element.confirmed
+      visitedMap[element.country].active += element.active
+      visitedMap[element.country].recovered += element.recovered
+      visitedMap[element.country].deaths += element.deaths
+    } else {
+      visitedMap[element.country] = {
+        active: element.active,
+        confirmed: element.confirmed,
+        country: element.country,
+        deaths: element.deaths,
+        lastUpdate: element.lastUpdate,
+        latitude: element.latitude,
+        longitude: element.longitude,
+        province: null,
+        recovered: element.recovered
+      }
+    }
+  })
+  Object.keys(visitedMap).forEach((countryName, i) => {
+    output.push(visitedMap[countryName])
+  })
+  return output
+}
+
 const replaceGis = async () => {
   logger.info("Fetching data...")
   await connectDB()
   const dbClient = getDBClient()
   const session = getClient().startSession()
 
-  const cases = await casesByLocation()
+  const prePreparedCases = await casesByLocation()
+  let cases = []
+  let fragmentedCountries = []
+
+  for (let i = 0; i < prePreparedCases.length; i++) {
+    const element = prePreparedCases[i];
+    if (element.country.match(/^(Spain|Brazil|Russia|Mexico|Colombia|Peru|Chile|Germany|Italy|Ukraine|Japan)$/g)) {
+      prePreparedCases.splice(i, 1)
+      fragmentedCountries.push(element)
+      i--
+    }
+  }
+
+  const consolidatedFragmentedCountries = consolidatedCountries(fragmentedCountries)
+  cases = prePreparedCases.concat(consolidatedFragmentedCountries)
+
   const timeSeriesCases = await timeSeriesData()
   
   const confirmed = await totalConfirmed()
