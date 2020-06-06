@@ -34,8 +34,6 @@ const processUstimeSeriesData = (ghData) => {
         row.casesByDate.forEach((caseByDate, k) => {
           if (day === caseByDate.day) {
             stateMap[row.provinceState].casesByDate[j].confirmed += caseByDate.confirmed
-            // caseByDate.active += caseByDate.active
-            // caseByDate.recovered += caseByDate.recovered
             stateMap[row.provinceState].casesByDate[j].confirmedCasesToday += caseByDate.confirmedCasesToday
             stateMap[row.provinceState].casesByDate[j].deathsToday += caseByDate.deathsToday
             stateMap[row.provinceState].casesByDate[j].deaths += caseByDate.deaths
@@ -66,7 +64,6 @@ const timeSeriesData = async () => {
   let usStateData = null
   try {
     const confirmedCases = await getGhTimeSeriesConfirmed()
-    // const recoveredCases = await getGhTimeSeriesRecovered()
     const deathCases = await getGhTimeSeriesDeaths()
 
     const confirmedUsCases = await getGhUS_TimeSeriesConfirmed()
@@ -110,7 +107,6 @@ const casesByLocation = async () => {
       lastUpdate: attributes.Last_Update,
       latitude: attributes.Lat,
       longitude: attributes.Long_,
-      // objectId: attributes.OBJECTID,
       province: attributes.Province_State,
       recovered: attributes.Recovered
     }))
@@ -296,8 +292,6 @@ const replaceGis = async () => {
                 ghCase.casesByDate.forEach((ghCaseByDate) => {
                   if (ghCaseByDate.day === caseByDate.day) {
                     caseByDate.confirmed += ghCaseByDate.confirmed
-                    // caseByDate.active += ghCaseByDate.active
-                    // caseByDate.recovered += ghCaseByDate.recovered
                     caseByDate.deaths += ghCaseByDate.deaths
                     caseByDate.confirmedCasesToday += ghCaseByDate.confirmedCasesToday
                     caseByDate.deathsToday += ghCaseByDate.deathsToday
@@ -344,7 +338,6 @@ const replaceGis = async () => {
     let greenland = null
     let globalCountryCasesByDate = {}
     const allCountriesFound = Object.keys(countryFoundMap)
-    // allTotals.allCountries = allCountriesFound
     allCountriesFound.forEach((countryName) => {
       let countryWithProvince = countryFoundMap[countryName]
       if (countryWithProvince.provincesList.length > 0) {

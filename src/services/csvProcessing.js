@@ -27,15 +27,12 @@ const processCsvFromSources = (area, csv_confirmedCases, csv_deathCases) => {
   let badRows = 0
   let stats = { 
     confirmed: 0,
-    // recovered: 0,
     deaths: 0,
-    // active: 0,
     globalCasesByDate: {},
   }
 
   for (let i = 0; i < csv_confirmedCases.length; i++) {
     const confirmedCase = csv_confirmedCases[i]
-    // const recoveredCases = csv_recoveredCases[i]
     const deathCases = csv_deathCases[i]
 
     let countryRegion = ''
@@ -70,9 +67,7 @@ const processCsvFromSources = (area, csv_confirmedCases, csv_deathCases) => {
       if (date.match(/^\d{1,2}\/\d{1,2}\/\d{1,4}$/g)) {        
         daysCounter ++
         const parsedConfirmed = parseInt(confirmedCase[date], 10)
-        // const parsedRecovered = parseInt(recoveredCases[date], 10)
         const parsedDeaths = parseInt(deathCases[date], 10)
-        // const parsedActive = parsedConfirmed - parsedRecovered - parsedDeaths
 
         if (Number.isInteger(parsedConfirmed) && Number.isInteger(parsedDeaths)) {
           if (Math.sign(parsedConfirmed) === -1 || Math.sign(parsedDeaths) === -1) {
@@ -98,9 +93,7 @@ const processCsvFromSources = (area, csv_confirmedCases, csv_deathCases) => {
 
           const casesTotalPerDay  = { 
             confirmed: parsedConfirmed,
-            // recovered: parsedRecovered,
             deaths: parsedDeaths,
-            // active: parsedActive,
             confirmedCasesToday: confirmedCasesToday,
             deathsToday: deathsToday,
             day: date,
@@ -112,17 +105,13 @@ const processCsvFromSources = (area, csv_confirmedCases, csv_deathCases) => {
             stats.globalCasesByDate[date]
           ) {
             stats.globalCasesByDate[date].confirmed += parsedConfirmed
-            // stats.globalCasesByDate[date].recovered += parsedRecovered
             stats.globalCasesByDate[date].deaths += parsedDeaths
-            // stats.globalCasesByDate[date].active += parsedActive
             stats.globalCasesByDate[date].confirmedCasesToday += confirmedCasesToday
             stats.globalCasesByDate[date].deathsToday += deathsToday
           } else {
             stats.globalCasesByDate[date] = { 
               confirmed: 0,
-              // recovered: 0,
               deaths: 0,
-              // active: 0,
               confirmedCasesToday: 0,
               deathsToday: 0,
             }        
@@ -131,9 +120,7 @@ const processCsvFromSources = (area, csv_confirmedCases, csv_deathCases) => {
           // The last day of the time series
           if (j + 1 === rowKeys.length) {
             stats.confirmed += parsedConfirmed
-            // stats.recovered += parsedRecovered
             stats.deaths += parsedDeaths
-            // stats.active += parsedActive
             stats.daysSinceFirstCase = daysCounter
           }
         }
@@ -147,14 +134,12 @@ const processCsvFromSources = (area, csv_confirmedCases, csv_deathCases) => {
 
 const combineDataFromSources = (area, confirmedCasesSource, deathCasesSource) => {
   const jsonCsv_confirmedCases = csv2json(confirmedCasesSource)
-  // const jsonCsv_recoveredCases = csv2json(recoveredCasesSource)
   const jsonCsv_deathCases = csv2json(deathCasesSource)
 
   if (
     jsonCsv_confirmedCases.length === jsonCsv_deathCases.length) 
   {
     const sortedConfirmed = sortCountriesByProvinceStatus(area, jsonCsv_confirmedCases)
-    // const sortedRecovered = sortCountriesByProvinceStatus(jsonCsv_recoveredCases)
     const sortedDeaths = sortCountriesByProvinceStatus(area, jsonCsv_deathCases)
     
     return processCsvFromSources(area, sortedConfirmed, sortedDeaths)

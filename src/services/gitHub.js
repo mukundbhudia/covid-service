@@ -33,7 +33,6 @@ const getGhUS_TimeSeriesDeaths = () => {
 
 module.exports = {
   getGhTimeSeriesConfirmed,
-  // getGhTimeSeriesRecovered,
   getGhTimeSeriesDeaths,
   getGhUS_TimeSeriesConfirmed,
   getGhUS_TimeSeriesDeaths,
