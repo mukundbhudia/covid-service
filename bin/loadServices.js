@@ -45,7 +45,7 @@ const processUstimeSeriesData = (ghData) => {
         countryRegion: row.countryRegion,
         provinceState: row.provinceState,
         latitude: row.latitude,
-        longitude: row.longitude, // TODO: fix typo!
+        longitude: row.longitude,
         casesByDate: row.casesByDate,
       }
     }
