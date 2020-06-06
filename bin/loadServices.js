@@ -231,7 +231,7 @@ const replaceGis = async () => {
 
   for (let i = 0; i < prePreparedCases.length; i++) {
     const element = prePreparedCases[i];
-    if (element.country.match(/^(Spain|Brazil|Russia|Mexico|Colombia|Peru|Chile|Germany|Italy|Ukraine|Japan)$/g)) {
+    if (element.country.match(/^(Spain|Brazil|Russia|Mexico|Colombia|Peru|Chile|Germany|Italy|Ukraine|Japan|Sweden)$/g)) {
       prePreparedCases.splice(i, 1)
       fragmentedCountries.push(element)
       i--
