@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-
+const { performance } = require('perf_hooks')
 const logger = require('../logger').initLogger()
 
 const { connectDB, getDBClient, getClient, disconnectDB } = require('../src/dbClient')
@@ -216,6 +216,7 @@ const consolidatedCountries = (countries) => {
 }
 
 const replaceGis = async () => {
+  const tStart = performance.now()
   logger.info("Fetching data...")
   await connectDB()
   const dbClient = getDBClient()
@@ -447,6 +448,9 @@ const replaceGis = async () => {
 
   await session.endSession()
   await disconnectDB()
+
+  const tEnd = performance.now();
+  logger.info(`Script took ${ (tEnd - tStart)/1000 } seconds.`)
 }
 
 const fetchAndReplace = () => {
