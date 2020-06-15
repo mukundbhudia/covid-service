@@ -228,7 +228,10 @@ const replaceGis = async () => {
 
   for (let i = 0; i < prePreparedCases.length; i++) {
     const element = prePreparedCases[i];
-    if (element.country.match(/^(Spain|Brazil|Russia|Mexico|Colombia|Peru|Chile|Germany|Italy|Ukraine|Japan|Sweden|India|Pakistan)$/g)) {
+    if (
+      element.country.match(/^(Spain|Brazil|Russia|Mexico|Colombia|Peru|Chile|Germany|Italy|Ukraine|Japan|Sweden|India|Pakistan|United Kingdom)$/g) &&
+      !element.province.match(/^(Anguilla|Bermuda|British Virgin Islands|Cayman Islands|Channel Islands|Falkland Islands \(Malvinas\)|Gibraltar|Isle of Man|Montserrat|Turks and Caicos Islands|)$/g)
+    ) {
       prePreparedCases.splice(i, 1)
       fragmentedCountries.push(element)
       i--
