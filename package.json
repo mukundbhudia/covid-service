@@ -2,10 +2,13 @@
   "name": "covid-service",
   "version": "1.0.0",
   "description": "",
-  "main": "index.js",
+  "main": "bin/loadServices.js",
+  "engines": {
+    "node": "14.x.x",
+    "npm": "6.x.x"
+  },
   "scripts": {
     "start": "node bin/loadServices.js",
-    "local": "env LOCAL=true node bin/loadServices.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "repository": {
@@ -27,11 +30,6 @@
     "winston": "^3.2.3"
   },
   "devDependencies": {
-    "babel-cli": "^6.26.0",
-    "babel-core": "^6.26.3",
-    "babel-loader": "^8.0.6",
-    "babel-node": "0.0.1-security",
-    "babel-preset-env": "^1.7.0",
     "nodemon": "^2.0.4"
   }
 }

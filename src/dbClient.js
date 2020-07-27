@@ -5,16 +5,14 @@ let client
 let dbName = 'covid19'
 
 const connectDB = async () => {
-  let dbURI = process.env.MONGO_URI
-
-  if (process.env.LOCAL) {
-    dbURI = 'mongodb://localhost:27017'
-  }
+  let dbURI = process.env.MONGO_URI || 'mongodb://localhost:27017'
 
   try {
     client = await MongoClient.connect(dbURI, { useUnifiedTopology: true })
   } catch (error) {
+    console.error(error)
     logger.error(error)
+    process.exit(1)
   }
 }
 
@@ -28,3 +26,4 @@ module.exports = {
   getDBClient,
   getClient,
 }
+
