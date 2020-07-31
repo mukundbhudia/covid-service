@@ -440,11 +440,14 @@ const replaceGis = async () => {
     logger.info(`Countries/Regions total: ${combinedCountryCasesWithTimeSeries.length}. Total distinct countries: ${allCountriesFound.length}. (From ${cases.length} GIS cases and ${timeSeriesCases.collection.length} GH cases)`)
 
     await session.withTransaction(async () => {
-      await dbClient.collection('totals').deleteMany({})
-      await dbClient.collection('totals').insertOne(allTotals)
+      await dbClient.collection('totals_temp').deleteMany({})
+      await dbClient.collection('totals_temp').insertOne(allTotals)
 
-      await dbClient.collection('casesByLocation').deleteMany({})
-      await dbClient.collection('casesByLocation').insertMany(combinedCountryCasesWithTimeSeries)
+      await dbClient.collection('casesByLocation_temp').deleteMany({})
+      await dbClient.collection('casesByLocation_temp').insertMany(combinedCountryCasesWithTimeSeries)
+
+      await dbClient.collection('totals_temp').rename('totals', { dropTarget: true })
+      await dbClient.collection('casesByLocation_temp').rename('casesByLocation', { dropTarget: true })
       logger.info("Saved to database.")
     })
   }
