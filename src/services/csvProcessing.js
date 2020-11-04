@@ -25,7 +25,7 @@ const sortCountriesByProvinceStatus = (area, casesArray) => {
 const processCsvFromSources = (area, csv_confirmedCases, csv_deathCases) => {
   let collection = []
   let badRows = 0
-  let stats = { 
+  let stats = {
     confirmed: 0,
     deaths: 0,
     globalCasesByDate: {},
@@ -51,37 +51,50 @@ const processCsvFromSources = (area, csv_confirmedCases, csv_deathCases) => {
       latitude = confirmedCase['Lat']
       longtitude = confirmedCase['Long']
     }
-  
+
     const rowKeys = Object.keys(confirmedCase)
-  
+
     let processedData = {
       countryRegion: countryRegion,
       provinceState: provinceState,
       latitude: latitude,
       longitude: longtitude,
-      casesByDate: []
+      casesByDate: [],
     }
 
     let daysCounter = 0
     rowKeys.forEach((date, j) => {
-      if (date.match(/^\d{1,2}\/\d{1,2}\/\d{1,4}$/g)) {        
-        daysCounter ++
+      if (date.match(/^\d{1,2}\/\d{1,2}\/\d{1,4}$/g)) {
+        daysCounter++
         const parsedConfirmed = parseInt(confirmedCase[date], 10)
         const parsedDeaths = parseInt(deathCases[date], 10)
 
-        if (Number.isInteger(parsedConfirmed) && Number.isInteger(parsedDeaths)) {
-          if (Math.sign(parsedConfirmed) === -1 || Math.sign(parsedDeaths) === -1) {
+        if (
+          Number.isInteger(parsedConfirmed) &&
+          Number.isInteger(parsedDeaths)
+        ) {
+          if (
+            Math.sign(parsedConfirmed) === -1 ||
+            Math.sign(parsedDeaths) === -1
+          ) {
             badRows++
-            console.error(`${countryRegion} in ${provinceState} has a negative value`)
-            logger.error(`${countryRegion} in ${provinceState} has a negative value`)
+            console.error(
+              `${countryRegion} in ${provinceState} has a negative value`
+            )
+            logger.error(
+              `${countryRegion} in ${provinceState} has a negative value`
+            )
           }
 
           let confirmedCasesToday = 0
           let deathsToday = 0
 
           if (daysCounter > 1) {
-            const dayBefore = rowKeys[j-1]
-            const parsedConfirmedDayBefore = parseInt(confirmedCase[dayBefore], 10)
+            const dayBefore = rowKeys[j - 1]
+            const parsedConfirmedDayBefore = parseInt(
+              confirmedCase[dayBefore],
+              10
+            )
             const parsedDeathDayBefore = parseInt(deathCases[dayBefore], 10)
             if (parsedConfirmed > parsedConfirmedDayBefore) {
               confirmedCasesToday = parsedConfirmed - parsedConfirmedDayBefore
@@ -91,30 +104,30 @@ const processCsvFromSources = (area, csv_confirmedCases, csv_deathCases) => {
             }
           }
 
-          const casesTotalPerDay  = { 
+          const casesTotalPerDay = {
             confirmed: parsedConfirmed,
             deaths: parsedDeaths,
             confirmedCasesToday: confirmedCasesToday,
             deathsToday: deathsToday,
             day: date,
           }
-  
+
           processedData.casesByDate.push(casesTotalPerDay)
-  
-          if (
-            stats.globalCasesByDate[date]
-          ) {
+
+          if (stats.globalCasesByDate[date]) {
             stats.globalCasesByDate[date].confirmed += parsedConfirmed
             stats.globalCasesByDate[date].deaths += parsedDeaths
-            stats.globalCasesByDate[date].confirmedCasesToday += confirmedCasesToday
+            stats.globalCasesByDate[
+              date
+            ].confirmedCasesToday += confirmedCasesToday
             stats.globalCasesByDate[date].deathsToday += deathsToday
           } else {
-            stats.globalCasesByDate[date] = { 
+            stats.globalCasesByDate[date] = {
               confirmed: 0,
               deaths: 0,
               confirmedCasesToday: 0,
               deathsToday: 0,
-            }        
+            }
           }
 
           // The last day of the time series
@@ -128,20 +141,27 @@ const processCsvFromSources = (area, csv_confirmedCases, csv_deathCases) => {
     })
     collection.push(processedData)
   }
-  if (badRows > 0) { logger.error(`Found ${badRows} CSV rows containing a negative value`) }
+  if (badRows > 0) {
+    logger.error(`Found ${badRows} CSV rows containing a negative value`)
+  }
   return { stats: stats, collection: collection }
 }
 
-const combineDataFromSources = (area, confirmedCasesSource, deathCasesSource) => {
+const combineDataFromSources = (
+  area,
+  confirmedCasesSource,
+  deathCasesSource
+) => {
   const jsonCsv_confirmedCases = csv2json(confirmedCasesSource)
   const jsonCsv_deathCases = csv2json(deathCasesSource)
 
-  if (
-    jsonCsv_confirmedCases.length === jsonCsv_deathCases.length) 
-  {
-    const sortedConfirmed = sortCountriesByProvinceStatus(area, jsonCsv_confirmedCases)
+  if (jsonCsv_confirmedCases.length === jsonCsv_deathCases.length) {
+    const sortedConfirmed = sortCountriesByProvinceStatus(
+      area,
+      jsonCsv_confirmedCases
+    )
     const sortedDeaths = sortCountriesByProvinceStatus(area, jsonCsv_deathCases)
-    
+
     return processCsvFromSources(area, sortedConfirmed, sortedDeaths)
   } else {
     const errorMsg = `${area} CSV data from multiple sources differs in length. Confirmed: ${jsonCsv_confirmedCases.length}, deaths: ${jsonCsv_deathCases.length}`
@@ -152,5 +172,5 @@ const combineDataFromSources = (area, confirmedCasesSource, deathCasesSource) =>
 }
 
 module.exports = {
-  combineDataFromSources: combineDataFromSources
+  combineDataFromSources: combineDataFromSources,
 }

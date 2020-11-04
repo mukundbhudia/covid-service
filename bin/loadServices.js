@@ -2,13 +2,18 @@
 const { performance } = require('perf_hooks')
 const logger = require('../logger').initLogger()
 
-const { connectDB, getDBClient, getClient, disconnectDB } = require('../src/dbClient')
+const {
+  connectDB,
+  getDBClient,
+  getClient,
+  disconnectDB,
+} = require('../src/dbClient')
 const processing = require('../src/services/csvProcessing')
 const {
   getGisCasesByCountry,
   getGisTotalConfirmed,
   getGisTotalRecovered,
-  getGisTotalDeaths
+  getGisTotalDeaths,
 } = require('../src/services/gis')
 
 const {
@@ -33,10 +38,14 @@ const processUstimeSeriesData = (ghData) => {
       allUsDays.forEach((day, j) => {
         row.casesByDate.forEach((caseByDate, k) => {
           if (day === caseByDate.day) {
-            stateMap[row.provinceState].casesByDate[j].confirmed += caseByDate.confirmed
-            stateMap[row.provinceState].casesByDate[j].confirmedCasesToday += caseByDate.confirmedCasesToday
-            stateMap[row.provinceState].casesByDate[j].deathsToday += caseByDate.deathsToday
-            stateMap[row.provinceState].casesByDate[j].deaths += caseByDate.deaths
+            stateMap[row.provinceState].casesByDate[j].confirmed +=
+              caseByDate.confirmed
+            stateMap[row.provinceState].casesByDate[j].confirmedCasesToday +=
+              caseByDate.confirmedCasesToday
+            stateMap[row.provinceState].casesByDate[j].deathsToday +=
+              caseByDate.deathsToday
+            stateMap[row.provinceState].casesByDate[j].deaths +=
+              caseByDate.deaths
           }
         })
       })
@@ -69,9 +78,17 @@ const timeSeriesData = async () => {
     const confirmedUsCases = await getGhUS_TimeSeriesConfirmed()
     const deathUsCases = await getGhUS_TimeSeriesDeaths()
 
-    result = processing.combineDataFromSources('global', confirmedCases.data, deathCases.data)
+    result = processing.combineDataFromSources(
+      'global',
+      confirmedCases.data,
+      deathCases.data
+    )
 
-    usResult = processing.combineDataFromSources('us', confirmedUsCases.data, deathUsCases.data)
+    usResult = processing.combineDataFromSources(
+      'us',
+      confirmedUsCases.data,
+      deathUsCases.data
+    )
     const globalData = result.collection
     usStateData = processUstimeSeriesData(usResult)
     logger.info(`Processed ${usStateData.length} US states/regions...`)
@@ -80,7 +97,7 @@ const timeSeriesData = async () => {
     if (result) {
       const keys = Object.keys(result.stats.globalCasesByDate)
       const timeSeries = []
-      keys.forEach(day => {
+      keys.forEach((day) => {
         result.stats.globalCasesByDate[day].day = day
         timeSeries.push(result.stats.globalCasesByDate[day])
       })
@@ -108,7 +125,7 @@ const casesByLocation = async () => {
       latitude: attributes.Lat,
       longitude: attributes.Long_,
       province: attributes.Province_State,
-      recovered: attributes.Recovered
+      recovered: attributes.Recovered,
     }))
   } catch (err) {
     console.log(err)
@@ -154,26 +171,26 @@ const getCountryCodeFromCountryName = (countryName, province) => {
   let foundCountryCode = null
   const exceptionsMap = {
     'United Kingdom': 'GBR',
-    'US': 'USA',
-    'Iran': 'IRN',
-    'Bolivia': 'BOL',
-    'Venezuela': 'VEN',
-    'Brunei': 'BRN',
+    US: 'USA',
+    Iran: 'IRN',
+    Bolivia: 'BOL',
+    Venezuela: 'VEN',
+    Brunei: 'BRN',
     'Korea, South': 'KOR',
-    'Moldova': 'MDA',
-    'Russia': 'RUS',
-    'Syria': 'SYR',
-    'Vietnam': 'VNM',
-    'Tanzania': 'TZA',
+    Moldova: 'MDA',
+    Russia: 'RUS',
+    Syria: 'SYR',
+    Vietnam: 'VNM',
+    Tanzania: 'TZA',
     'Taiwan*': 'TWN',
-    'Laos': 'LAO',
-    'Burma': 'MMR',
+    Laos: 'LAO',
+    Burma: 'MMR',
     "Cote d'Ivoire": 'CIV',
     'Congo (Brazzaville)': 'COG',
     'Congo (Kinshasa)': 'COD',
   }
 
-  alpha3CountryCodes.forEach(alphaCountry => {
+  alpha3CountryCodes.forEach((alphaCountry) => {
     if (alphaCountry.name === countryName) {
       foundCountryCode = alphaCountry['alpha-3']
       if (province && province === 'Greenland') {
@@ -205,7 +222,7 @@ const consolidatedCountries = (countries) => {
         latitude: element.latitude,
         longitude: element.longitude,
         province: null,
-        recovered: element.recovered
+        recovered: element.recovered,
       }
     }
   })
@@ -217,7 +234,7 @@ const consolidatedCountries = (countries) => {
 
 const replaceGis = async () => {
   const tStart = performance.now()
-  logger.info("Fetching data...")
+  logger.info('Fetching data...')
   await connectDB()
   const dbClient = getDBClient()
   const session = getClient().startSession()
@@ -227,11 +244,17 @@ const replaceGis = async () => {
   let fragmentedCountries = []
 
   for (let i = 0; i < prePreparedCases.length; i++) {
-    const element = prePreparedCases[i];
+    const element = prePreparedCases[i]
     if (
-      element && element.country && element.province &&
-      element.country.match(/^(Spain|Brazil|Russia|Mexico|Colombia|Peru|Chile|Germany|Italy|Ukraine|Japan|Sweden|India|Pakistan|United Kingdom)$/g) &&
-      !element.province.match(/^(Anguilla|Bermuda|British Virgin Islands|Cayman Islands|Channel Islands|Falkland Islands \(Malvinas\)|Gibraltar|Isle of Man|Montserrat|Turks and Caicos Islands|)$/g)
+      element &&
+      element.country &&
+      element.province &&
+      element.country.match(
+        /^(Spain|Brazil|Russia|Mexico|Colombia|Peru|Chile|Germany|Italy|Ukraine|Japan|Sweden|India|Pakistan|United Kingdom)$/g
+      ) &&
+      !element.province.match(
+        /^(Anguilla|Bermuda|British Virgin Islands|Cayman Islands|Channel Islands|Falkland Islands \(Malvinas\)|Gibraltar|Isle of Man|Montserrat|Turks and Caicos Islands|)$/g
+      )
     ) {
       prePreparedCases.splice(i, 1)
       fragmentedCountries.push(element)
@@ -239,23 +262,35 @@ const replaceGis = async () => {
     }
   }
 
-  const consolidatedFragmentedCountries = consolidatedCountries(fragmentedCountries)
+  const consolidatedFragmentedCountries = consolidatedCountries(
+    fragmentedCountries
+  )
   cases = prePreparedCases.concat(consolidatedFragmentedCountries)
 
   const timeSeriesCases = await timeSeriesData()
-  
+
   const confirmed = await totalConfirmed()
   const recovered = await totalRecovered()
   const deaths = await totalDeaths()
 
-  if (timeSeriesCases && cases &&
+  if (
+    timeSeriesCases &&
+    cases &&
     cases.length > 0 &&
     confirmed > 0 &&
     recovered > 0 &&
     deaths > 0
   ) {
-    const globalConfirmedCasesToday = confirmed - timeSeriesCases.stats.globalCasesByDate[timeSeriesCases.stats.globalCasesByDate.length - 1].confirmed
-    const globalDeathsToday = deaths - timeSeriesCases.stats.globalCasesByDate[timeSeriesCases.stats.globalCasesByDate.length - 1].deaths
+    const globalConfirmedCasesToday =
+      confirmed -
+      timeSeriesCases.stats.globalCasesByDate[
+        timeSeriesCases.stats.globalCasesByDate.length - 1
+      ].confirmed
+    const globalDeathsToday =
+      deaths -
+      timeSeriesCases.stats.globalCasesByDate[
+        timeSeriesCases.stats.globalCasesByDate.length - 1
+      ].deaths
     const allTotals = {
       confirmed: confirmed,
       recovered: recovered,
@@ -273,48 +308,84 @@ const replaceGis = async () => {
     timeSeriesCases.collection.forEach((ghCase) => {
       cases.forEach((gisCase) => {
         if (gisCase.country === ghCase.countryRegion) {
-          if ((gisCase.province === ghCase.provinceState) ||
+          if (
+            gisCase.province === ghCase.provinceState ||
             (gisCase.province === null && ghCase.provinceState === '') ||
-            (gisCase.province === null && ghCase.provinceState === ghCase.countryRegion) ) 
-          {
-            gisCase.countryCode = getCountryCodeFromCountryName(gisCase.country, gisCase.province)
+            (gisCase.province === null &&
+              ghCase.provinceState === ghCase.countryRegion)
+          ) {
+            gisCase.countryCode = getCountryCodeFromCountryName(
+              gisCase.country,
+              gisCase.province
+            )
             gisCase.provincesList = []
-            if (gisCase.province !== null && ghCase.provinceState !== ghCase.countryRegion) {
+            if (
+              gisCase.province !== null &&
+              ghCase.provinceState !== ghCase.countryRegion
+            ) {
               gisCase.hasProvince = false
-              gisCase.idKey = (gisCase.country + ' ' + gisCase.province).replace(/,/g, '').replace(/\s+/g, '-').toLowerCase()
+              gisCase.idKey = (gisCase.country + ' ' + gisCase.province)
+                .replace(/,/g, '')
+                .replace(/\s+/g, '-')
+                .toLowerCase()
             } else {
               gisCase.hasProvince = false
-              gisCase.idKey = (gisCase.country).replace(/,/g, '').replace(/\s+/g, '-').toLowerCase()
+              gisCase.idKey = gisCase.country
+                .replace(/,/g, '')
+                .replace(/\s+/g, '-')
+                .toLowerCase()
             }
-            if (countryFoundMap[gisCase.country]) { // More than one country so it'll have many provinces/regions
-              countryFoundMap[gisCase.country].provincesList.push({idKey: gisCase.idKey, province: gisCase.province})
+            if (countryFoundMap[gisCase.country]) {
+              // More than one country so it'll have many provinces/regions
+              countryFoundMap[gisCase.country].provincesList.push({
+                idKey: gisCase.idKey,
+                province: gisCase.province,
+              })
               countryFoundMap[gisCase.country].confirmed += gisCase.confirmed
               countryFoundMap[gisCase.country].active += gisCase.active
               countryFoundMap[gisCase.country].recovered += gisCase.recovered
               countryFoundMap[gisCase.country].deaths += gisCase.deaths
 
-              countryFoundMap[gisCase.country].casesByDate.forEach((caseByDate) => {
-                ghCase.casesByDate.forEach((ghCaseByDate) => {
-                  if (ghCaseByDate.day === caseByDate.day) {
-                    caseByDate.confirmed += ghCaseByDate.confirmed
-                    caseByDate.deaths += ghCaseByDate.deaths
-                    caseByDate.confirmedCasesToday += ghCaseByDate.confirmedCasesToday
-                    caseByDate.deathsToday += ghCaseByDate.deathsToday
-                  }
-                })
-              })
-              countryFoundMap[gisCase.country].confirmedCasesToday = countryFoundMap[gisCase.country].confirmed - countryFoundMap[gisCase.country].casesByDate[countryFoundMap[gisCase.country].casesByDate.length - 1].confirmed
-              countryFoundMap[gisCase.country].deathsToday = countryFoundMap[gisCase.country].deaths - countryFoundMap[gisCase.country].casesByDate[countryFoundMap[gisCase.country].casesByDate.length - 1].deaths
+              countryFoundMap[gisCase.country].casesByDate.forEach(
+                (caseByDate) => {
+                  ghCase.casesByDate.forEach((ghCaseByDate) => {
+                    if (ghCaseByDate.day === caseByDate.day) {
+                      caseByDate.confirmed += ghCaseByDate.confirmed
+                      caseByDate.deaths += ghCaseByDate.deaths
+                      caseByDate.confirmedCasesToday +=
+                        ghCaseByDate.confirmedCasesToday
+                      caseByDate.deathsToday += ghCaseByDate.deathsToday
+                    }
+                  })
+                }
+              )
+              countryFoundMap[gisCase.country].confirmedCasesToday =
+                countryFoundMap[gisCase.country].confirmed -
+                countryFoundMap[gisCase.country].casesByDate[
+                  countryFoundMap[gisCase.country].casesByDate.length - 1
+                ].confirmed
+              countryFoundMap[gisCase.country].deathsToday =
+                countryFoundMap[gisCase.country].deaths -
+                countryFoundMap[gisCase.country].casesByDate[
+                  countryFoundMap[gisCase.country].casesByDate.length - 1
+                ].deaths
             } else {
               countryFoundMap[gisCase.country] = {
-                idKey: (gisCase.country).replace(/,/g, '').replace(/\s+/g, '-').toLowerCase(),
+                idKey: gisCase.country
+                  .replace(/,/g, '')
+                  .replace(/\s+/g, '-')
+                  .toLowerCase(),
                 countryCode: gisCase.countryCode,
                 active: gisCase.active,
                 confirmed: gisCase.confirmed,
                 country: gisCase.country,
                 deaths: gisCase.deaths,
-                confirmedCasesToday: gisCase.confirmed - ghCase.casesByDate[ghCase.casesByDate.length - 1].confirmed,
-                deathsToday: gisCase.deaths - ghCase.casesByDate[ghCase.casesByDate.length - 1].deaths,
+                confirmedCasesToday:
+                  gisCase.confirmed -
+                  ghCase.casesByDate[ghCase.casesByDate.length - 1].confirmed,
+                deathsToday:
+                  gisCase.deaths -
+                  ghCase.casesByDate[ghCase.casesByDate.length - 1].deaths,
                 lastUpdate: gisCase.lastUpdate,
                 latitude: gisCase.latitude,
                 longitude: gisCase.longitude,
@@ -322,24 +393,35 @@ const replaceGis = async () => {
                 recovered: gisCase.recovered,
                 casesByDate: ghCase.casesByDate,
                 provincesList: [],
-                hasProvince: true
+                hasProvince: true,
               }
               if (gisCase.province !== null) {
                 gisCase.hasProvince = false
                 countryFoundMap[gisCase.country].hasProvince = true
-                countryFoundMap[gisCase.country].provincesList.push({idKey: gisCase.idKey, province: gisCase.province})
+                countryFoundMap[gisCase.country].provincesList.push({
+                  idKey: gisCase.idKey,
+                  province: gisCase.province,
+                })
               }
             }
             gisCase.casesByDate = ghCase.casesByDate
-            gisCase.confirmedCasesToday = gisCase.confirmed - gisCase.casesByDate[gisCase.casesByDate.length - 1].confirmed,
-            gisCase.deathsToday = gisCase.deaths - gisCase.casesByDate[gisCase.casesByDate.length - 1].deaths,
-            combinedCountryCasesWithTimeSeries.push(gisCase)
+            ;(gisCase.confirmedCasesToday =
+              gisCase.confirmed -
+              gisCase.casesByDate[gisCase.casesByDate.length - 1].confirmed),
+              (gisCase.deathsToday =
+                gisCase.deaths -
+                gisCase.casesByDate[gisCase.casesByDate.length - 1].deaths),
+              combinedCountryCasesWithTimeSeries.push(gisCase)
           }
         }
       })
     })
 
-    const todayInUS_ShortFormat = (new Date()).toLocaleDateString('en-US', { year: '2-digit', month: 'numeric', day: 'numeric' })
+    const todayInUS_ShortFormat = new Date().toLocaleDateString('en-US', {
+      year: '2-digit',
+      month: 'numeric',
+      day: 'numeric',
+    })
     let greenland = null
     let globalCountryCasesByDate = {}
     const allCountriesFound = Object.keys(countryFoundMap)
@@ -350,7 +432,10 @@ const replaceGis = async () => {
           if (item.idKey === countryWithProvince.idKey) {
             item.idKey = item.idKey + '-mainland'
             item.province = 'mainland'
-            countryWithProvince.provincesList.push({idKey: item.idKey, province: item.province})
+            countryWithProvince.provincesList.push({
+              idKey: item.idKey,
+              province: item.province,
+            })
           }
           if (item.idKey === 'denmark-greenland') {
             greenland = Object.assign({}, item)
@@ -358,9 +443,15 @@ const replaceGis = async () => {
             greenland.country = 'Greenland'
             greenland.province = null
           }
-          if (countryWithProvince.lastUpdate === null && item.lastUpdate !== null) {
+          if (
+            countryWithProvince.lastUpdate === null &&
+            item.lastUpdate !== null
+          ) {
             countryWithProvince.lastUpdate = item.lastUpdate
-          } else if (countryWithProvince.lastUpdate !== null && item.lastUpdate === null) {
+          } else if (
+            countryWithProvince.lastUpdate !== null &&
+            item.lastUpdate === null
+          ) {
             item.lastUpdate = countryWithProvince.lastUpdate
           }
         })
@@ -389,19 +480,21 @@ const replaceGis = async () => {
         } else {
           globalCountryCasesByDate[caseByDate.day] = {
             day: caseByDate.day,
-            casesOfTheDay: [{
-              idKey: countryWithProvince.idKey,
-              country: countryWithProvince.country,
-              countryCode: countryWithProvince.countryCode,
-              confirmed: caseByDate.confirmed,
-              deaths: caseByDate.deaths,
-              deathsToday: caseByDate.deathsToday,
-              confirmedCasesToday: caseByDate.confirmedCasesToday,
-            }],
+            casesOfTheDay: [
+              {
+                idKey: countryWithProvince.idKey,
+                country: countryWithProvince.country,
+                countryCode: countryWithProvince.countryCode,
+                confirmed: caseByDate.confirmed,
+                deaths: caseByDate.deaths,
+                deathsToday: caseByDate.deathsToday,
+                confirmedCasesToday: caseByDate.confirmedCasesToday,
+              },
+            ],
           }
         }
       })
-    
+
       if (globalCountryCasesByDate[todayInUS_ShortFormat]) {
         globalCountryCasesByDate[todayInUS_ShortFormat].casesOfTheDay.push({
           idKey: countryWithProvince.idKey,
@@ -417,17 +510,19 @@ const replaceGis = async () => {
       } else {
         globalCountryCasesByDate[todayInUS_ShortFormat] = {
           day: todayInUS_ShortFormat,
-          casesOfTheDay: [{
-            idKey: countryWithProvince.idKey,
-            country: countryWithProvince.country,
-            countryCode: countryWithProvince.countryCode,
-            confirmed: countryWithProvince.confirmed,
-            active: countryWithProvince.active,
-            recovered: countryWithProvince.recovered,
-            deaths: countryWithProvince.deaths,
-            deathsToday: countryWithProvince.deathsToday,
-            confirmedCasesToday: countryWithProvince.confirmedCasesToday,
-          }],
+          casesOfTheDay: [
+            {
+              idKey: countryWithProvince.idKey,
+              country: countryWithProvince.country,
+              countryCode: countryWithProvince.countryCode,
+              confirmed: countryWithProvince.confirmed,
+              active: countryWithProvince.active,
+              recovered: countryWithProvince.recovered,
+              deaths: countryWithProvince.deaths,
+              deathsToday: countryWithProvince.deathsToday,
+              confirmedCasesToday: countryWithProvince.confirmedCasesToday,
+            },
+          ],
         }
       }
     })
@@ -438,26 +533,34 @@ const replaceGis = async () => {
     })
     allTotals.globalCasesByDate = globalCountryCasesByDateArray
 
-    logger.info(`Countries/Regions total: ${combinedCountryCasesWithTimeSeries.length}. Total distinct countries: ${allCountriesFound.length}. (From ${cases.length} GIS cases and ${timeSeriesCases.collection.length} GH cases)`)
+    logger.info(
+      `Countries/Regions total: ${combinedCountryCasesWithTimeSeries.length}. Total distinct countries: ${allCountriesFound.length}. (From ${cases.length} GIS cases and ${timeSeriesCases.collection.length} GH cases)`
+    )
 
     await session.withTransaction(async () => {
       await dbClient.collection('totals_temp').deleteMany({})
       await dbClient.collection('totals_temp').insertOne(allTotals)
 
       await dbClient.collection('casesByLocation_temp').deleteMany({})
-      await dbClient.collection('casesByLocation_temp').insertMany(combinedCountryCasesWithTimeSeries)
+      await dbClient
+        .collection('casesByLocation_temp')
+        .insertMany(combinedCountryCasesWithTimeSeries)
 
-      await dbClient.collection('totals_temp').rename('totals', { dropTarget: true })
-      await dbClient.collection('casesByLocation_temp').rename('casesByLocation', { dropTarget: true })
-      logger.info("Saved to database.")
+      await dbClient
+        .collection('totals_temp')
+        .rename('totals', { dropTarget: true })
+      await dbClient
+        .collection('casesByLocation_temp')
+        .rename('casesByLocation', { dropTarget: true })
+      logger.info('Saved to database.')
     })
   }
 
   await session.endSession()
   await disconnectDB()
 
-  const tEnd = performance.now();
-  logger.info(`Script took ${ (tEnd - tStart)/1000 } seconds.`)
+  const tEnd = performance.now()
+  logger.info(`Script took ${(tEnd - tStart) / 1000} seconds.`)
 }
 
 const fetchAndReplace = () => {
@@ -465,9 +568,9 @@ const fetchAndReplace = () => {
     replaceGis()
   } catch (err) {
     logger.error(err)
-  } 
+  }
 }
 
 // Initial load
-logger.info("Service loader started...")
+logger.info('Service loader started...')
 fetchAndReplace()
