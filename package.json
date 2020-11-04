@@ -23,10 +23,10 @@
   },
   "homepage": "https://github.com/mukundbhudia/covid-service#readme",
   "dependencies": {
-    "axios": "^0.20.0",
+    "axios": "^0.21.0",
     "csvjson-csv2json": "^5.0.6",
     "dotenv": "^8.2.0",
     "mongodb": "^3.6.2",
-    "winston": "^3.2.3"
+    "winston": "^3.3.3"
   }
 }
