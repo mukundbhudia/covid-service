@@ -250,7 +250,7 @@ const replaceGis = async () => {
       element.country &&
       element.province &&
       element.country.match(
-        /^(Spain|Brazil|Russia|Mexico|Colombia|Peru|Chile|Germany|Italy|Ukraine|Japan|Sweden|India|Pakistan|United Kingdom)$/g
+        /^(Spain|Brazil|Belgium|Russia|Mexico|Colombia|Peru|Chile|Germany|Italy|Ukraine|Japan|Sweden|India|Pakistan|United Kingdom)$/g
       ) &&
       !element.province.match(
         /^(Anguilla|Bermuda|British Virgin Islands|Cayman Islands|Channel Islands|Falkland Islands \(Malvinas\)|Gibraltar|Isle of Man|Montserrat|Turks and Caicos Islands|)$/g
