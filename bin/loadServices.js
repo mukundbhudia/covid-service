@@ -24,6 +24,9 @@ const {
   getGhUS_TimeSeriesDeaths,
 } = require('../src/services/gitHub')
 
+let totalHttpReqTime = 0
+let tStartDbTime = 0
+
 const alpha3CountryCodes = require('../src/alpha3-countryCodes_slim-3.json')
 
 require('dotenv').config()
@@ -239,7 +242,17 @@ const replaceGis = async () => {
   const dbClient = getDBClient()
   const session = getClient().startSession()
 
+  const tStartHttpReqs = performance.now()
+
   const prePreparedCases = await casesByLocation()
+  const timeSeriesCases = await timeSeriesData()
+  const confirmed = await totalConfirmed()
+  const recovered = await totalRecovered()
+  const deaths = await totalDeaths()
+
+  const tStopHttpReqs = performance.now()
+
+  totalHttpReqTime = tStopHttpReqs - tStartHttpReqs
   let cases = []
   let fragmentedCountries = []
 
@@ -266,12 +279,6 @@ const replaceGis = async () => {
     fragmentedCountries
   )
   cases = prePreparedCases.concat(consolidatedFragmentedCountries)
-
-  const timeSeriesCases = await timeSeriesData()
-
-  const confirmed = await totalConfirmed()
-  const recovered = await totalRecovered()
-  const deaths = await totalDeaths()
 
   if (
     timeSeriesCases &&
@@ -537,6 +544,8 @@ const replaceGis = async () => {
       `Countries/Regions total: ${combinedCountryCasesWithTimeSeries.length}. Total distinct countries: ${allCountriesFound.length}. (From ${cases.length} GIS cases and ${timeSeriesCases.collection.length} GH cases)`
     )
 
+    tStartDbTime = performance.now()
+
     await session.withTransaction(async () => {
       await dbClient.collection('totals_temp').deleteMany({})
       await dbClient.collection('totals_temp').insertOne(allTotals)
@@ -560,7 +569,17 @@ const replaceGis = async () => {
   await disconnectDB()
 
   const tEnd = performance.now()
-  logger.info(`Script took ${(tEnd - tStart) / 1000} seconds.`)
+  const totalTime = (tEnd - tStart) / 1000
+  const totalDbTime = (tEnd - tStartDbTime) / 1000
+  const totalHttpTime = totalHttpReqTime / 1000
+
+  logger.info(
+    `Script took ${
+      totalTime
+    } seconds. ${totalHttpTime} second(s) of network requests. ${
+      totalDbTime
+    } second(s) of db processing. ${totalTime - (totalHttpTime + totalDbTime)} second(s) of core processing.`
+  )
 }
 
 const fetchAndReplace = () => {
