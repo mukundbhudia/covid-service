@@ -1,8 +1,8 @@
 # covid-service
 
-Collects, processes and aggregates live COVID-19, and historical time series data from Johns Hopkins University. The aggregated data is then used to populate a mongoDB database which supplies data to https://github.com/mukundbhudia/covid-api and subsequently https://github.com/mukundbhudia/covid-web.
+**NOTE:** This project has now been archived. It has been re-written in Rust and replaced by https://github.com/mukundbhudia/covid-service-rs.
 
-**Note:** This project will be archived soon. It has been re-written in Rust and replaced by https://github.com/mukundbhudia/covid-service-rs.
+Collects, processes and aggregates live COVID-19, and historical time series data from Johns Hopkins University. The aggregated data is then used to populate a mongoDB database which supplies data to https://github.com/mukundbhudia/covid-api and subsequently https://github.com/mukundbhudia/covid-web.
 
 ## Pre-requisites
 
